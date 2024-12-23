@@ -28,7 +28,7 @@ import {
   Vec,
 } from '@blocksuite/global/utils';
 
-import type { Color } from '../../consts/index.js';
+import type { Color } from '../../themes/index.js';
 
 export type BrushProps = BaseElementProps & {
   /**

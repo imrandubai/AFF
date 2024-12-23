@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* oxlint-disable @typescript-eslint/no-non-null-assertion */
 import type { SurfaceBlockModel } from '@blocksuite/affine-block-surface';
 import {
   CanvasRenderer,
@@ -101,14 +101,14 @@ export class MindmapSurfaceBlock extends BlockComponent<SurfaceBlockModel> {
       provider: {
         selectedElements: () => [],
         getColorScheme: () => themeService.edgelessTheme,
-        getColorValue: (color: Color, fallback?: string, real?: boolean) =>
+        getColorValue: (color: Color, fallback?: Color, real?: boolean) =>
           themeService.getColorValue(
             color,
             fallback,
             real,
             themeService.edgelessTheme
           ),
-        generateColorProperty: (color: Color, fallback: string) =>
+        generateColorProperty: (color: Color, fallback?: Color) =>
           themeService.generateColorProperty(
             color,
             fallback,

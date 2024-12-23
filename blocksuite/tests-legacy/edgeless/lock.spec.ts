@@ -59,7 +59,6 @@ test.describe('lock', () => {
   test('edgeless element can be locked and unlocked', async ({ page }) => {
     await edgelessCommonSetup(page);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapTest = async <F extends (...args: any) => any>(
       elementCreateFn: F,
       ...args: Parameters<F>

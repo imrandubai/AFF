@@ -2,12 +2,12 @@ import { GfxLocalElementModel } from '@blocksuite/block-std/gfx';
 import type { PointLocation } from '@blocksuite/global/utils';
 
 import {
-  type Color,
   ConnectorMode,
   DEFAULT_ROUGHNESS,
   type PointStyle,
   StrokeStyle,
 } from '../../consts/index.js';
+import type { Color } from '../../themes/index.ts';
 import type { Connection } from './connector.js';
 
 export class LocalConnectorElementModel extends GfxLocalElementModel {

@@ -21,7 +21,7 @@ import type {
 } from '@blocksuite/affine-model';
 import {
   DEFAULT_NOTE_HEIGHT,
-  DEFAULT_SHAPE_STROKE_COLOR,
+  DefaultTheme,
   LayoutType,
   MindmapElementModel,
   ShapeElementModel,
@@ -643,7 +643,7 @@ export class EdgelessAutoComplete extends WithDisposable(LitElement) {
 
     this._autoCompleteOverlay.stroke = surface.renderer.getColorValue(
       current.strokeColor,
-      DEFAULT_SHAPE_STROKE_COLOR,
+      DefaultTheme.shapeStrokeColor,
       true
     );
     this._autoCompleteOverlay.linePoints = path;

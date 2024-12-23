@@ -160,13 +160,13 @@ export class SurfaceBlockComponent extends BlockComponent<
       gridManager: gfx.grid,
       enableStackingCanvas: true,
       provider: {
-        generateColorProperty: (color: Color, fallback: string) =>
+        generateColorProperty: (color: Color, fallback?: Color) =>
           themeService.generateColorProperty(
             color,
             fallback,
             themeService.edgelessTheme
           ),
-        getColorValue: (color: Color, fallback?: string, real?: boolean) =>
+        getColorValue: (color: Color, fallback?: Color, real?: boolean) =>
           themeService.getColorValue(
             color,
             fallback,

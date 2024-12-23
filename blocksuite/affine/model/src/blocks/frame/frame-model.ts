@@ -17,7 +17,7 @@ import {
 import { Bound } from '@blocksuite/global/utils';
 import { BlockModel, defineBlockSchema, type Text } from '@blocksuite/store';
 
-import type { Color } from '../../consts/index.js';
+import type { Color } from '../../themes/index.js';
 
 export type FrameBlockProps = {
   title: Text;

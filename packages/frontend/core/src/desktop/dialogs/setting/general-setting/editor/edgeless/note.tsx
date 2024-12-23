@@ -10,19 +10,19 @@ import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { useI18n } from '@affine/i18n';
 import {
   createEnumMap,
-  NoteBackgroundColor,
-  NoteBackgroundColorMap,
+  DefaultTheme,
   NoteShadow,
   NoteShadowMap,
   StrokeStyle,
 } from '@blocksuite/affine/blocks';
 import type { Doc } from '@blocksuite/affine/store';
 import { useFramework, useLiveData } from '@toeverything/infra';
+import { isEqual } from 'lodash-es';
 import { useCallback, useMemo } from 'react';
 
 import { DropdownMenu } from '../menu';
 import { menuTrigger, settingWrapper } from '../style.css';
-import { useColor } from '../utils';
+import { usePalettes } from '../utils';
 import { Point } from './point';
 import { EdgelessSnapshot } from './snapshot';
 
@@ -49,7 +49,10 @@ export const NoteSettings = () => {
   const framework = useFramework();
   const { editorSetting } = framework.get(EditorSettingService);
   const settings = useLiveData(editorSetting.settings$);
-  const getColorFromMap = useColor();
+  const { palettes, getCurrentColor } = usePalettes(
+    DefaultTheme.NoteBackgroundColorPalettes,
+    DefaultTheme.noteBackgrounColor
+  );
 
   const borderStyleItems = useMemo<RadioItem[]>(
     () => [
@@ -102,23 +105,23 @@ export const NoteSettings = () => {
 
   const backgroundItems = useMemo(() => {
     const { background } = settings['affine:note'];
-    return Object.entries(NoteBackgroundColor).map(([name, value]) => {
+    return palettes.map(({ key, value, resolvedValue }) => {
       const handler = () => {
         editorSetting.set('affine:note', { background: value });
       };
-      const isSelected = background === value;
+      const isSelected = isEqual(background, value);
       return (
         <MenuItem
-          key={name}
+          key={key}
           onSelect={handler}
           selected={isSelected}
-          prefix={<Point color={value} />}
+          prefix={<Point color={resolvedValue} />}
         >
-          {name}
+          {key}
         </MenuItem>
       );
     });
-  }, [editorSetting, settings]);
+  }, [editorSetting, settings, palettes]);
 
   const cornerItems = useMemo(() => {
     const { borderRadius } = settings['affine:note'].edgeless.style;
@@ -164,8 +167,8 @@ export const NoteSettings = () => {
 
   const currentColor = useMemo(() => {
     const { background } = settings['affine:note'];
-    return getColorFromMap(background, NoteBackgroundColorMap);
-  }, [getColorFromMap, settings]);
+    return getCurrentColor(background);
+  }, [getCurrentColor, settings]);
 
   const getElements = useCallback((doc: Doc) => {
     return doc.getBlocksByFlavour('affine:note') || [];
@@ -192,7 +195,7 @@ export const NoteSettings = () => {
             trigger={
               <MenuTrigger
                 className={menuTrigger}
-                prefix={<Point color={currentColor.value} />}
+                prefix={<Point color={currentColor.resolvedValue} />}
               >
                 {currentColor.key}
               </MenuTrigger>

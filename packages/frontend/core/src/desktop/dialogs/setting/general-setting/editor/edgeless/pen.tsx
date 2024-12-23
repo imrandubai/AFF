@@ -2,14 +2,15 @@ import { MenuItem, MenuTrigger, Slider } from '@affine/component';
 import { SettingRow } from '@affine/component/setting-components';
 import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { useI18n } from '@affine/i18n';
-import { StrokeColor, StrokeColorMap } from '@blocksuite/affine/blocks';
+import { DefaultTheme } from '@blocksuite/affine/blocks';
 import type { Doc } from '@blocksuite/affine/store';
 import { useFramework, useLiveData } from '@toeverything/infra';
+import { isEqual } from 'lodash-es';
 import { useCallback, useMemo } from 'react';
 
 import { DropdownMenu } from '../menu';
 import { menuTrigger } from '../style.css';
-import { useColor } from '../utils';
+import { usePalettes } from '../utils';
 import { Point } from './point';
 import { EdgelessSnapshot } from './snapshot';
 import { getSurfaceBlock } from './utils';
@@ -19,31 +20,34 @@ export const PenSettings = () => {
   const framework = useFramework();
   const { editorSetting } = framework.get(EditorSettingService);
   const settings = useLiveData(editorSetting.settings$);
-  const getColorFromMap = useColor();
+  const { palettes, getCurrentColor } = usePalettes(
+    DefaultTheme.StrokeColorPalettes,
+    DefaultTheme.black
+  );
 
   const currentColor = useMemo(() => {
-    return getColorFromMap(settings.brush.color, StrokeColorMap);
-  }, [getColorFromMap, settings.brush.color]);
+    return getCurrentColor(settings.brush.color);
+  }, [getCurrentColor, settings.brush.color]);
 
   const colorItems = useMemo(() => {
     const { color } = settings.brush;
-    return Object.entries(StrokeColor).map(([name, value]) => {
+    return palettes.map(({ key, value, resolvedValue }) => {
       const handler = () => {
         editorSetting.set('brush', { color: value });
       };
-      const isSelected = color === value;
+      const isSelected = isEqual(color, value);
       return (
         <MenuItem
-          key={name}
+          key={key}
           onSelect={handler}
           selected={isSelected}
-          prefix={<Point color={value} />}
+          prefix={<Point color={resolvedValue} />}
         >
-          {name}
+          {key}
         </MenuItem>
       );
     });
-  }, [editorSetting, settings.brush]);
+  }, [editorSetting, settings.brush, palettes]);
 
   const borderThickness = settings.brush.lineWidth;
   const setBorderThickness = useCallback(
@@ -78,7 +82,7 @@ export const PenSettings = () => {
             trigger={
               <MenuTrigger
                 className={menuTrigger}
-                prefix={<Point color={currentColor.value} />}
+                prefix={<Point color={currentColor.resolvedValue} />}
               >
                 {currentColor.key}
               </MenuTrigger>

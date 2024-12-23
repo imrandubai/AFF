@@ -4,10 +4,14 @@ import type {
   BrushProps,
   ColorScheme,
 } from '@blocksuite/affine-model';
-import { LineWidth, PALETTES } from '@blocksuite/affine-model';
+import {
+  DefaultTheme,
+  LineWidth,
+  resolveColor,
+} from '@blocksuite/affine-model';
 import { countBy, maxBy, WithDisposable } from '@blocksuite/global/utils';
 import { html, LitElement, nothing } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 
 import type { EdgelessColorPickerButton } from '../../edgeless/components/color-picker/button.js';
@@ -17,7 +21,6 @@ import {
   packColorsWithColorScheme,
 } from '../../edgeless/components/color-picker/utils.js';
 import type { ColorEvent } from '../../edgeless/components/panel/color-panel.js';
-import { GET_DEFAULT_LINE_COLOR } from '../../edgeless/components/panel/color-panel.js';
 import type { LineWidthEvent } from '../../edgeless/components/panel/line-width-panel.js';
 import type { EdgelessRootBlockComponent } from '../../edgeless/edgeless-root-block.js';
 
@@ -25,13 +28,13 @@ function getMostCommonColor(
   elements: BrushElementModel[],
   colorScheme: ColorScheme
 ): string {
-  const colors = countBy(elements, (ele: BrushElementModel) => {
-    return typeof ele.color === 'object'
-      ? (ele.color[colorScheme] ?? ele.color.normal ?? null)
-      : ele.color;
-  });
+  const colors = countBy(elements, (ele: BrushElementModel) =>
+    resolveColor(ele.color, colorScheme)
+  );
   const max = maxBy(Object.entries(colors), ([_k, count]) => count);
-  return max ? (max[0] as string) : GET_DEFAULT_LINE_COLOR(colorScheme);
+  return max
+    ? (max[0] as string)
+    : resolveColor(DefaultTheme.black, colorScheme);
 }
 
 function getMostCommonSize(elements: BrushElementModel[]): LineWidth {
@@ -45,42 +48,34 @@ function notEqual<K extends keyof BrushProps>(key: K, value: BrushProps[K]) {
 }
 
 export class EdgelessChangeBrushButton extends WithDisposable(LitElement) {
-  private readonly _setBrushColor = ({ detail: color }: ColorEvent) => {
+  private readonly _setBrushColor = ({ detail }: ColorEvent) => {
+    const color = detail.value;
     this._setBrushProp('color', color);
-    this._selectedColor = color;
   };
 
   private readonly _setLineWidth = ({ detail: lineWidth }: LineWidthEvent) => {
     this._setBrushProp('lineWidth', lineWidth);
-    this._selectedSize = lineWidth;
   };
 
-  pickColor = (event: PickColorEvent) => {
-    if (event.type === 'pick') {
-      this.elements.forEach(ele =>
-        this.crud.updateElement(ele.id, packColor('color', { ...event.detail }))
-      );
+  pickColor = (e: PickColorEvent) => {
+    const field = 'color';
+
+    if (e.type === 'pick') {
+      const color = e.detail.value;
+      this.elements.forEach(ele => {
+        const props = packColor(field, color);
+        this.crud.updateElement(ele.id, props);
+      });
       return;
     }
 
     this.elements.forEach(ele =>
-      ele[event.type === 'start' ? 'stash' : 'pop']('color')
+      ele[e.type === 'start' ? 'stash' : 'pop'](field)
     );
   };
 
   get doc() {
     return this.edgeless.doc;
-  }
-
-  get selectedColor() {
-    const colorScheme = this.edgeless.surface.renderer.getColorScheme();
-    return (
-      this._selectedColor ?? getMostCommonColor(this.elements, colorScheme)
-    );
-  }
-
-  get selectedSize() {
-    return this._selectedSize ?? getMostCommonSize(this.elements);
   }
 
   get service() {
@@ -110,7 +105,8 @@ export class EdgelessChangeBrushButton extends WithDisposable(LitElement) {
   override render() {
     const colorScheme = this.edgeless.surface.renderer.getColorScheme();
     const elements = this.elements;
-    const { selectedSize, selectedColor } = this;
+    const selectedColor = getMostCommonColor(elements, colorScheme);
+    const selectedSize = getMostCommonSize(elements);
 
     return html`
       <edgeless-line-width-panel
@@ -138,7 +134,8 @@ export class EdgelessChangeBrushButton extends WithDisposable(LitElement) {
               .color=${selectedColor}
               .colors=${colors}
               .colorType=${type}
-              .palettes=${PALETTES}
+              .theme=${colorScheme}
+              .palettes=${DefaultTheme.Palettes}
             >
             </edgeless-color-picker-button>
           `;
@@ -156,6 +153,8 @@ export class EdgelessChangeBrushButton extends WithDisposable(LitElement) {
           >
             <edgeless-color-panel
               .value=${selectedColor}
+              .theme=${colorScheme}
+              .palettes=${DefaultTheme.Palettes}
               @select=${this._setBrushColor}
             >
             </edgeless-color-panel>
@@ -164,12 +163,6 @@ export class EdgelessChangeBrushButton extends WithDisposable(LitElement) {
       )}
     `;
   }
-
-  @state()
-  private accessor _selectedColor: string | null = null;
-
-  @state()
-  private accessor _selectedSize: LineWidth | null = null;
 
   @query('edgeless-color-picker-button.color')
   accessor colorButton!: EdgelessColorPickerButton;

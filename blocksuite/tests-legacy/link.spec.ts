@@ -476,7 +476,7 @@ test.skip('convert link to embed', async ({ page }) => {
     `
 <affine:page>
   <affine:note
-    prop:background="--affine-v2-edgeless-note-white"
+    prop:background="--affine-note-background-blue"
     prop:displayMode="both"
     prop:edgeless={
       Object {
@@ -493,7 +493,7 @@ test.skip('convert link to embed', async ({ page }) => {
     prop:lockedBySelf={false}
   >
     <affine:paragraph
-      prop:collapsed={false}
+      prop:collapsed={false} 
       prop:text="aaa"
       prop:type="text"
     />

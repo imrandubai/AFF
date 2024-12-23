@@ -1,4 +1,6 @@
 import type { EditorMenuButton } from '@blocksuite/affine-components/toolbar';
+import type { ColorScheme, Palette } from '@blocksuite/affine-model';
+import { resolveColor } from '@blocksuite/affine-model';
 import { WithDisposable } from '@blocksuite/global/utils';
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
@@ -7,19 +9,14 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { ColorEvent } from '../panel/color-panel.js';
-import type {
-  ModeType,
-  PickColorDetail,
-  PickColorEvent,
-  PickColorType,
-} from './types.js';
+import type { ModeType, PickColorEvent, PickColorType } from './types.js';
 import { keepColor, preprocessColor, rgbaToHex8 } from './utils.js';
 
 type Type = 'normal' | 'custom';
 
 export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
   readonly #select = (e: ColorEvent) => {
-    this.#pick({ palette: e.detail });
+    this.#pick(e.detail);
   };
 
   switchToCustomTab = (e: MouseEvent) => {
@@ -69,14 +66,16 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
   }
 
   get isCustomColor() {
-    return !this.palettes.includes(this.color);
+    return !this.palettes
+      .map(({ value }) => resolveColor(value, this.theme))
+      .includes(this.color);
   }
 
   get tabContentPadding() {
     return `${this.tabType === 'custom' ? 0 : 8}px`;
   }
 
-  #pick(detail: PickColorDetail) {
+  #pick(detail: Palette) {
     this.pick?.({ type: 'start' });
     this.pick?.({ type: 'pick', detail });
     this.pick?.({ type: 'end' });
@@ -126,8 +125,8 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
                   role="listbox"
                   class=${ifDefined(this.colorPanelClass)}
                   .value=${this.color}
+                  .theme=${this.theme}
                   .palettes=${this.palettes}
-                  .options=${this.palettes}
                   .hollowCircle=${this.hollowCircle}
                   .openColorPicker=${this.switchToCustomTab}
                   .hasTransparent=${false}
@@ -189,13 +188,16 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
   accessor menuButton!: EditorMenuButton;
 
   @property({ attribute: false })
-  accessor palettes: string[] = [];
+  accessor palettes: Palette[] = [];
 
   @property({ attribute: false })
   accessor pick!: (event: PickColorEvent) => void;
 
   @state()
   accessor tabType: Type = 'normal';
+
+  @property({ attribute: false })
+  accessor theme!: ColorScheme;
 
   @property()
   accessor tooltip: string | undefined = undefined;

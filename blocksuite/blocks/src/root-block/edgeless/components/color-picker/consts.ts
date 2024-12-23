@@ -11,8 +11,7 @@ export const COLORS: [Rgb, number][] = [
   [{ r: 0, g: 1, b: 1 }, 3 / 6],
   [{ r: 0, g: 0, b: 1 }, 4 / 6],
   [{ r: 1, g: 0, b: 1 }, 5 / 6],
-  // eslint-disable-next-line sonarjs/no-identical-expressions
-  [{ r: 1, g: 0, b: 0 }, 6 / 6],
+  [{ r: 1, g: 0, b: 0 }, 1],
 ];
 
 export const FIRST_COLOR = COLORS[0][0];

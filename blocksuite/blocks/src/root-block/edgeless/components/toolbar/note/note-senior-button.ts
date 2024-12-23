@@ -166,7 +166,7 @@ export class EdgelessNoteSeniorButton extends EdgelessToolbarToolMixin(
         }>
       ) => {
         this._states.forEach(key => {
-          // eslint-disable-next-line eqeqeq
+          // oxlint-disable-next-line eqeqeq
           if (props[key] != undefined) {
             Object.assign(this, { [key]: props[key] });
           }

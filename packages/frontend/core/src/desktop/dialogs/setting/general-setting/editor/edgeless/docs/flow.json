@@ -456,7 +456,7 @@
                   }
                 ]
               },
-              "background": "--affine-palette-transparent",
+              "background": "transparent",
               "xywh": "[-131.27862548828125,-112.8125,880.65234375,645.11328125]",
               "index": "aEV",
               "childElementIds": {}

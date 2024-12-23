@@ -3,11 +3,7 @@ import {
   ConnectorLWithArrowIcon,
   ConnectorXWithArrowIcon,
 } from '@blocksuite/affine-components/icons';
-import {
-  ConnectorMode,
-  DEFAULT_CONNECTOR_COLOR,
-  STROKE_COLORS,
-} from '@blocksuite/affine-model';
+import { ConnectorMode, DefaultTheme } from '@blocksuite/affine-model';
 import {
   EditPropsStore,
   ThemeProvider,
@@ -104,6 +100,10 @@ export class EdgelessConnectorMenu extends EdgelessToolbarToolMixin(
     return { mode, stroke, strokeWidth };
   });
 
+  private readonly _theme$ = computed(() => {
+    return this.edgeless.std.get(ThemeProvider).theme$.value;
+  });
+
   override type: GfxToolsFullOptionValue['type'] = 'connector';
 
   override render() {
@@ -112,9 +112,6 @@ export class EdgelessConnectorMenu extends EdgelessToolbarToolMixin(
       mode,
       this.onChange
     );
-    const color = this.edgeless.std
-      .get(ThemeProvider)
-      .getColorValue(stroke, DEFAULT_CONNECTOR_COLOR);
 
     return html`
       <edgeless-slide-menu>
@@ -130,12 +127,14 @@ export class EdgelessConnectorMenu extends EdgelessToolbarToolMixin(
           <div class="submenu-divider"></div>
           <edgeless-color-panel
             class="one-way"
-            .value=${color}
-            .palettes=${STROKE_COLORS}
+            .value=${stroke}
+            .theme=${this._theme$.value}
+            .palettes=${DefaultTheme.StrokeColorPalettes}
             .hasTransparent=${!this.edgeless.doc.awarenessStore.getFlag(
               'enable_color_picker'
             )}
-            @select=${(e: ColorEvent) => this.onChange({ stroke: e.detail })}
+            @select=${(e: ColorEvent) =>
+              this.onChange({ stroke: e.detail.value })}
           ></edgeless-color-panel>
         </div>
       </edgeless-slide-menu>

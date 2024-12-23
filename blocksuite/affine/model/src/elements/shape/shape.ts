@@ -19,22 +19,20 @@ import type {
 import { DocCollection, type Y } from '@blocksuite/store';
 
 import {
-  type Color,
   DEFAULT_ROUGHNESS,
   FontFamily,
   FontStyle,
   FontWeight,
-  ShapeFillColor,
   ShapeStyle,
   ShapeTextFontSize,
   ShapeType,
-  StrokeColor,
   StrokeStyle,
   TextAlign,
   TextResizing,
   type TextStyleProps,
   TextVerticalAlign,
 } from '../../consts/index.js';
+import { type Color, DefaultTheme } from '../../themes/index.js';
 import { shapeMethods } from './api/index.js';
 
 export type ShapeProps = BaseElementProps & {
@@ -104,7 +102,7 @@ export class ShapeElementModel extends GfxPrimitiveElementModel<ShapeProps> {
   accessor color!: Color;
 
   @field()
-  accessor fillColor: Color = ShapeFillColor.Yellow;
+  accessor fillColor: Color = DefaultTheme.shapeFillColor;
 
   @field()
   accessor filled: boolean = false;
@@ -160,7 +158,7 @@ export class ShapeElementModel extends GfxPrimitiveElementModel<ShapeProps> {
   accessor shapeType: ShapeType = ShapeType.Rect;
 
   @field()
-  accessor strokeColor: Color = StrokeColor.Yellow;
+  accessor strokeColor: Color = DefaultTheme.shapeStrokeColor;
 
   @field()
   accessor strokeStyle: StrokeStyle = StrokeStyle.Solid;
@@ -205,7 +203,7 @@ export class LocalShapeElementModel extends GfxLocalElementModel {
   accessor color: Color = '#000000';
 
   @prop()
-  accessor fillColor: Color = ShapeFillColor.Yellow;
+  accessor fillColor: Color = DefaultTheme.shapeFillColor;
 
   @prop()
   accessor filled: boolean = false;
@@ -246,7 +244,7 @@ export class LocalShapeElementModel extends GfxLocalElementModel {
   accessor shapeType: ShapeType = ShapeType.Rect;
 
   @prop()
-  accessor strokeColor: Color = StrokeColor.Yellow;
+  accessor strokeColor: Color = DefaultTheme.shapeStrokeColor;
 
   @prop()
   accessor strokeStyle: StrokeStyle = StrokeStyle.Solid;

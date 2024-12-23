@@ -11,13 +11,13 @@ import {
 import { DocCollection, type Y } from '@blocksuite/store';
 
 import {
-  type Color,
   FontFamily,
   FontStyle,
   FontWeight,
   TextAlign,
   type TextStyleProps,
 } from '../../consts/index.js';
+import type { Color } from '../../themes/index.js';
 
 export type TextElementProps = BaseElementProps & {
   text: Y.Text;

@@ -11,6 +11,7 @@ export class EdgelessColorCustomButton extends LitElement {
       height: 24px;
       cursor: pointer;
     }
+
     :host([active]):after {
       position: absolute;
       display: block;

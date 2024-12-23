@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* oxlint-disable @typescript-eslint/no-non-null-assertion */
 import type { PointerEventState } from '@blocksuite/block-std';
 import { BaseTool, MouseButton } from '@blocksuite/block-std/gfx';
 import { IS_MAC } from '@blocksuite/global/env';

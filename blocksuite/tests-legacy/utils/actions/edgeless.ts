@@ -1,10 +1,6 @@
 import '../declare-test-window.js';
 
-import {
-  type NoteBlockModel,
-  type NoteDisplayMode,
-  ShapeFillColor,
-} from '@blocks/index.js';
+import type { NoteBlockModel, NoteDisplayMode } from '@blocks/index.js';
 import type { IPoint, IVec } from '@blocksuite/global/utils';
 import { assertExists, sleep } from '@blocksuite/global/utils';
 import type { Locator, Page } from '@playwright/test';
@@ -649,11 +645,11 @@ export async function rotateElementByHandle(
   );
 }
 
-export async function selectBrushColor(page: Page, color: string) {
+export async function selectBrushColor(page: Page, label: string) {
   const colorButton = page
     .locator('edgeless-brush-menu')
     .locator('edgeless-color-panel')
-    .locator(`.color-unit[aria-label="${color}"]`);
+    .locator(`.color-unit[aria-label="${label}"]`);
   await colorButton.click();
 }
 
@@ -1377,20 +1373,20 @@ export async function triggerComponentToolbarAction(
   }
 }
 
-export async function changeEdgelessNoteBackground(page: Page, color: string) {
+export async function changeEdgelessNoteBackground(page: Page, label: string) {
   const colorButton = page
     .locator('edgeless-change-note-button')
     .locator('edgeless-color-panel')
-    .locator(`.color-unit[aria-label="${color}"]`);
+    .locator(`.color-unit[aria-label="${label}"]`);
   await colorButton.click();
 }
 
-export async function changeShapeFillColor(page: Page, color: string) {
+export async function changeShapeFillColor(page: Page, label: string) {
   const colorButton = page
     .locator('edgeless-change-shape-button')
     .locator('edgeless-color-picker-button.fill-color')
     .locator('edgeless-color-panel')
-    .locator(`.color-unit[aria-label="${color}"]`);
+    .locator(`.color-unit[aria-label="${label}"]`);
   await colorButton.click({ force: true });
 }
 
@@ -1542,7 +1538,7 @@ export async function initThreeOverlapFilledShapes(page: Page) {
   await addBasicRectShapeElement(page, rect0.start, rect0.end);
   await page.mouse.click(rect0.start.x + 5, rect0.start.y + 5);
   await triggerComponentToolbarAction(page, 'changeShapeFillColor');
-  await changeShapeFillColor(page, ShapeFillColor.Green);
+  await changeShapeFillColor(page, 'LightGreen');
 
   const rect1 = {
     start: { x: 130, y: 130 },
@@ -1551,7 +1547,7 @@ export async function initThreeOverlapFilledShapes(page: Page) {
   await addBasicRectShapeElement(page, rect1.start, rect1.end);
   await page.mouse.click(rect1.start.x + 5, rect1.start.y + 5);
   await triggerComponentToolbarAction(page, 'changeShapeFillColor');
-  await changeShapeFillColor(page, ShapeFillColor.Black);
+  await changeShapeFillColor(page, 'MediumBlue');
 
   const rect2 = {
     start: { x: 160, y: 160 },
@@ -1560,7 +1556,7 @@ export async function initThreeOverlapFilledShapes(page: Page) {
   await addBasicRectShapeElement(page, rect2.start, rect2.end);
   await page.mouse.click(rect2.start.x + 5, rect2.start.y + 5);
   await triggerComponentToolbarAction(page, 'changeShapeFillColor');
-  await changeShapeFillColor(page, ShapeFillColor.White);
+  await changeShapeFillColor(page, 'White');
 }
 
 export async function initThreeOverlapNotes(page: Page, x = 130, y = 140) {

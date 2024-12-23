@@ -26,7 +26,6 @@ import {
 import { DocCollection, type Y } from '@blocksuite/store';
 
 import {
-  type Color,
   CONNECTOR_LABEL_MAX_WIDTH,
   ConnectorLabelOffsetAnchor,
   ConnectorMode,
@@ -39,6 +38,7 @@ import {
   TextAlign,
   type TextStyleProps,
 } from '../../consts/index.js';
+import type { Color } from '../../themes/index.ts';
 
 export type SerializedConnection = {
   id?: string;

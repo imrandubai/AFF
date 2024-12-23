@@ -3,11 +3,7 @@ import {
   type SurfaceBlockComponent,
 } from '@blocksuite/affine-block-surface';
 import type { ShapeElementModel, ShapeName } from '@blocksuite/affine-model';
-import {
-  DEFAULT_SHAPE_FILL_COLOR,
-  DEFAULT_SHAPE_STROKE_COLOR,
-  getShapeType,
-} from '@blocksuite/affine-model';
+import { DefaultTheme, getShapeType } from '@blocksuite/affine-model';
 import {
   EditPropsStore,
   TelemetryProvider,
@@ -202,10 +198,14 @@ export class ShapeTool extends BaseTool<ShapeToolOption> {
 
     options.stroke = this.std
       .get(ThemeProvider)
-      .getColorValue(attributes.strokeColor, DEFAULT_SHAPE_STROKE_COLOR, true);
+      .getColorValue(
+        attributes.strokeColor,
+        DefaultTheme.shapeStrokeColor,
+        true
+      );
     options.fill = this.std
       .get(ThemeProvider)
-      .getColorValue(attributes.fillColor, DEFAULT_SHAPE_FILL_COLOR, true);
+      .getColorValue(attributes.fillColor, DefaultTheme.shapeFillColor, true);
 
     switch (attributes.strokeStyle!) {
       case 'dash':

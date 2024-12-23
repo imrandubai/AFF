@@ -34,7 +34,10 @@
                 "anchor": "center"
               },
               "labelStyle": {
-                "color": "--affine-palette-line-black",
+                "color": {
+                  "dark": "#ffffff",
+                  "light": "#000000"
+                },
                 "fontSize": 16,
                 "fontFamily": "blocksuite:surface:Inter",
                 "fontWeight": "400",
@@ -49,7 +52,7 @@
               "source": {
                 "position": [120.8515625, 146.44921875]
               },
-              "stroke": "--affine-palette-line-grey",
+              "stroke": "#929292",
               "strokeStyle": "solid",
               "strokeWidth": 2,
               "target": {
@@ -83,7 +86,7 @@
                   }
                 ]
               },
-              "background": "--affine-palette-transparent",
+              "background": "transparent",
               "xywh": "[-12.04296875,-49.66796875,542.9765625,248.3984375]",
               "index": "Zz",
               "childElementIds": {

@@ -1229,7 +1229,6 @@ export async function getIndexCoordinate(
         document.querySelectorAll('editor-host')[currentEditorIndex];
       const richText = editorHost.querySelectorAll('rich-text')[
         richTextIndex
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ] as any;
       const domRange = richText.inlineEditor.toDomRange({
         index: vIndex,
@@ -1371,7 +1370,7 @@ export async function getCurrentEditorDocId(page: Page) {
 
 export async function getCurrentHTMLTheme(page: Page) {
   const root = page.locator('html');
-  // eslint-disable-next-line unicorn/prefer-dom-node-dataset
+
   return root.getAttribute('data-theme');
 }
 

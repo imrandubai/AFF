@@ -28,9 +28,10 @@ import {
   ConnectorMode,
   DEFAULT_FRONT_END_POINT_STYLE,
   DEFAULT_REAR_END_POINT_STYLE,
+  DefaultTheme,
   LineWidth,
-  PALETTES,
   PointStyle,
+  resolveColor,
   StrokeStyle,
 } from '@blocksuite/affine-model';
 import { countBy, maxBy, WithDisposable } from '@blocksuite/global/utils';
@@ -48,10 +49,7 @@ import {
   packColor,
   packColorsWithColorScheme,
 } from '../../edgeless/components/color-picker/utils.js';
-import {
-  type ColorEvent,
-  GET_DEFAULT_LINE_COLOR,
-} from '../../edgeless/components/panel/color-panel.js';
+import type { ColorEvent } from '../../edgeless/components/panel/color-panel.js';
 import {
   type LineStyleEvent,
   LineStylesPanel,
@@ -62,14 +60,14 @@ import { mountConnectorLabelEditor } from '../../edgeless/utils/text.js';
 function getMostCommonColor(
   elements: ConnectorElementModel[],
   colorScheme: ColorScheme
-): string | null {
-  const colors = countBy(elements, (ele: ConnectorElementModel) => {
-    return typeof ele.stroke === 'object'
-      ? (ele.stroke[colorScheme] ?? ele.stroke.normal ?? null)
-      : ele.stroke;
-  });
+): string {
+  const colors = countBy(elements, (ele: ConnectorElementModel) =>
+    resolveColor(ele.stroke, colorScheme)
+  );
   const max = maxBy(Object.entries(colors), ([_k, count]) => count);
-  return max ? (max[0] as string) : null;
+  return max
+    ? (max[0] as string)
+    : resolveColor(DefaultTheme.connectorColor, colorScheme);
 }
 
 function getMostCommonMode(
@@ -88,10 +86,10 @@ function getMostCommonLineWidth(elements: ConnectorElementModel[]): LineWidth {
 
 export function getMostCommonLineStyle(
   elements: ConnectorElementModel[]
-): StrokeStyle | null {
+): StrokeStyle {
   const sizes = countBy(elements, ele => ele.strokeStyle);
   const max = maxBy(Object.entries(sizes), ([_k, count]) => count);
-  return max ? (max[0] as StrokeStyle) : null;
+  return max ? (max[0] as StrokeStyle) : StrokeStyle.Solid;
 }
 
 function getMostCommonRough(elements: ConnectorElementModel[]): boolean {
@@ -112,15 +110,16 @@ function getMostCommonRough(elements: ConnectorElementModel[]): boolean {
 
 function getMostCommonEndpointStyle(
   elements: ConnectorElementModel[],
-  endpoint: ConnectorEndpoint
-): PointStyle | null {
+  endpoint: ConnectorEndpoint,
+  fallback: PointStyle
+): PointStyle {
   const field =
     endpoint === ConnectorEndpoint.Front
       ? 'frontEndpointStyle'
       : 'rearEndpointStyle';
   const modes = countBy(elements, ele => ele[field]);
   const max = maxBy(Object.entries(modes), ([_k, count]) => count);
-  return max ? (max[0] as PointStyle) : null;
+  return max ? (max[0] as PointStyle) : fallback;
 }
 
 function notEqual<
@@ -227,19 +226,33 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
     return this.edgeless.std.get(EdgelessCRUDIdentifier);
   }
 
-  pickColor = (event: PickColorEvent) => {
-    if (event.type === 'pick') {
-      this.elements.forEach(ele =>
-        this.crud.updateElement(
-          ele.id,
-          packColor('stroke', { ...event.detail })
-        )
-      );
+  private readonly _setConnectorColor = (e: ColorEvent) => {
+    const stroke = e.detail.value;
+    this._setConnectorProp('stroke', stroke);
+  };
+
+  private readonly _setConnectorStroke = ({ type, value }: LineStyleEvent) => {
+    if (type === 'size') {
+      this._setConnectorStrokeWidth(value);
+      return;
+    }
+    this._setConnectorStrokeStyle(value);
+  };
+
+  pickColor = (e: PickColorEvent) => {
+    const field = 'stroke';
+
+    if (e.type === 'pick') {
+      const color = e.detail.value;
+      this.elements.forEach(ele => {
+        const props = packColor(field, color);
+        this.crud.updateElement(ele.id, props);
+      });
       return;
     }
 
     this.elements.forEach(ele =>
-      ele[event.type === 'start' ? 'stash' : 'pop']('stroke')
+      ele[e.type === 'start' ? 'stash' : 'pop'](field)
     );
   };
 
@@ -276,10 +289,6 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
     );
   }
 
-  private _setConnectorColor(stroke: string) {
-    this._setConnectorProp('stroke', stroke);
-  }
-
   private _setConnectorMode(mode: ConnectorMode) {
     this._setConnectorProp('mode', mode);
   }
@@ -310,14 +319,6 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
     this._setConnectorProp('rough', rough);
   }
 
-  private _setConnectorStroke({ type, value }: LineStyleEvent) {
-    if (type === 'size') {
-      this._setConnectorStrokeWidth(value);
-      return;
-    }
-    this._setConnectorStrokeStyle(value);
-  }
-
   private _setConnectorStrokeStyle(strokeStyle: StrokeStyle) {
     this._setConnectorProp('strokeStyle', strokeStyle);
   }
@@ -339,20 +340,21 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
   override render() {
     const colorScheme = this.edgeless.surface.renderer.getColorScheme();
     const elements = this.elements;
-    const selectedColor =
-      getMostCommonColor(elements, colorScheme) ??
-      GET_DEFAULT_LINE_COLOR(colorScheme);
+    const selectedColor = getMostCommonColor(elements, colorScheme);
     const selectedMode = getMostCommonMode(elements);
-    const selectedLineSize = getMostCommonLineWidth(elements) ?? LineWidth.Four;
+    const selectedLineSize = getMostCommonLineWidth(elements);
     const selectedRough = getMostCommonRough(elements);
-    const selectedLineStyle =
-      getMostCommonLineStyle(elements) ?? StrokeStyle.Solid;
-    const selectedStartPointStyle =
-      getMostCommonEndpointStyle(elements, ConnectorEndpoint.Front) ??
-      DEFAULT_FRONT_END_POINT_STYLE;
-    const selectedEndPointStyle =
-      getMostCommonEndpointStyle(elements, ConnectorEndpoint.Rear) ??
-      DEFAULT_REAR_END_POINT_STYLE;
+    const selectedLineStyle = getMostCommonLineStyle(elements);
+    const selectedStartPointStyle = getMostCommonEndpointStyle(
+      elements,
+      ConnectorEndpoint.Front,
+      DEFAULT_FRONT_END_POINT_STYLE
+    );
+    const selectedEndPointStyle = getMostCommonEndpointStyle(
+      elements,
+      ConnectorEndpoint.Rear,
+      DEFAULT_REAR_END_POINT_STYLE
+    );
 
     return join(
       [
@@ -373,7 +375,8 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
                 .color=${selectedColor}
                 .colors=${colors}
                 .colorType=${type}
-                .palettes=${PALETTES}
+                .theme=${colorScheme}
+                .palettes=${DefaultTheme.Palettes}
                 .hollowCircle=${true}
               >
                 <div
@@ -389,7 +392,7 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
                   ${LineStylesPanel({
                     selectedLineSize: selectedLineSize,
                     selectedLineStyle: selectedLineStyle,
-                    onClick: (e: LineStyleEvent) => this._setConnectorStroke(e),
+                    onClick: this._setConnectorStroke,
                   })}
                 </div>
                 <editor-toolbar-separator
@@ -414,13 +417,12 @@ export class EdgelessChangeConnectorButton extends WithDisposable(LitElement) {
               `}
             >
               <stroke-style-panel
+                .theme=${colorScheme}
                 .strokeWidth=${selectedLineSize}
                 .strokeStyle=${selectedLineStyle}
                 .strokeColor=${selectedColor}
-                .setStrokeStyle=${(e: LineStyleEvent) =>
-                  this._setConnectorStroke(e)}
-                .setStrokeColor=${(e: ColorEvent) =>
-                  this._setConnectorColor(e.detail)}
+                .setStrokeStyle=${this._setConnectorStroke}
+                .setStrokeColor=${this._setConnectorColor}
               >
               </stroke-style-panel>
             </editor-menu-button>

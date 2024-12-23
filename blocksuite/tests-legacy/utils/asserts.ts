@@ -7,9 +7,9 @@ import type {
   RootBlockModel,
 } from '@blocks/index.js';
 import {
-  DEFAULT_NOTE_BACKGROUND_COLOR,
   DEFAULT_NOTE_HEIGHT,
   DEFAULT_NOTE_WIDTH,
+  DefaultTheme,
 } from '@blocksuite/affine-model';
 import type { BlockComponent, EditorHost } from '@blocksuite/block-std';
 import { BLOCK_ID_ATTR } from '@blocksuite/block-std';
@@ -113,7 +113,7 @@ export const defaultStore = {
           'sys:children': ['2'],
           'sys:version': 1,
           'prop:xywh': `[0,0,${DEFAULT_NOTE_WIDTH}, ${DEFAULT_NOTE_HEIGHT}]`,
-          'prop:background': DEFAULT_NOTE_BACKGROUND_COLOR,
+          'prop:background': DefaultTheme.noteBackgrounColor,
           'prop:index': 'a0',
           'prop:hidden': false,
           'prop:displayMode': 'both',
@@ -1084,7 +1084,7 @@ export async function assertEdgelessNoteBackground(
       return noteWrapper.style.backgroundColor;
     });
 
-  expect(backgroundColor).toEqual(`var(${color})`);
+  expect(toHex(backgroundColor)).toEqual(color);
 }
 
 function toHex(color: string) {
@@ -1117,7 +1117,9 @@ export async function assertEdgelessColorSameWithHexColor(
   edgelessColor: string,
   hexColor: `#${string}`
 ) {
-  const themeColor = await getCurrentThemeCSSPropertyValue(page, edgelessColor);
+  const themeColor = edgelessColor.startsWith('---')
+    ? await getCurrentThemeCSSPropertyValue(page, edgelessColor)
+    : edgelessColor;
   expect(themeColor).toBeTruthy();
   const edgelessHexColor = toHex(themeColor);
 
@@ -1335,11 +1337,20 @@ export async function assertTextSelection(
   }
 }
 
-export async function assertConnectorStrokeColor(page: Page, color: string) {
+export async function assertConnectorStrokeColor(
+  page: Page,
+  label: string,
+  color: string
+) {
   const colorButton = page
     .locator('edgeless-change-connector-button')
     .locator('edgeless-color-panel')
-    .locator(`.color-unit[aria-label="${color}"]`);
+    .locator(`.color-unit[aria-label="${label}"]`)
+    .locator('svg');
 
-  expect(await colorButton.count()).toBe(1);
+  const realColor = await colorButton.evaluate(
+    element => window.getComputedStyle(element).fill
+  );
+
+  expect(toHex(realColor)).toBe(color);
 }

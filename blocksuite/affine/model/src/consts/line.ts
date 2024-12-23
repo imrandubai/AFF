@@ -3,14 +3,14 @@ import { z } from 'zod';
 import { createEnumMap } from '../utils/enum.js';
 
 export enum LineWidth {
-  Eight = 8,
+  Two = 2,
   // Thin
   Four = 4,
   Six = 6,
+  Eight = 8,
   // Thick
   Ten = 10,
   Twelve = 12,
-  Two = 2,
 }
 
 export const LINE_WIDTHS = [
@@ -23,7 +23,7 @@ export const LINE_WIDTHS = [
 ];
 
 /**
- * Use `StrokeColor` instead.
+ * Use `DefaultTheme.StrokeColorMap` instead.
  *
  * @deprecated
  */
@@ -43,6 +43,11 @@ export enum LineColor {
 
 export const LineColorMap = createEnumMap(LineColor);
 
+/**
+ * Use `DefaultTheme.StrokeColorPalettes` instead.
+ *
+ * @deprecated
+ */
 export const LINE_COLORS = [
   LineColor.Yellow,
   LineColor.Orange,

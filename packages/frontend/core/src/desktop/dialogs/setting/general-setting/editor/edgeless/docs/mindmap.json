@@ -60,8 +60,14 @@
             "BvanBL7O38": {
               "index": "a0",
               "seed": 819595867,
-              "color": "--affine-black",
-              "fillColor": "--affine-white",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": {
+                "dark": "#000000",
+                "light": "#ffffff"
+              },
               "filled": true,
               "fontFamily": "blocksuite:surface:Poppins",
               "fontSize": 20,
@@ -79,7 +85,7 @@
               },
               "shapeStyle": "General",
               "shapeType": "rect",
-              "strokeColor": "#84CFFF",
+              "strokeColor": "#84cfff",
               "strokeStyle": "solid",
               "strokeWidth": 4,
               "text": {
@@ -98,8 +104,14 @@
             "QkmFfps45U": {
               "index": "a0",
               "seed": 557026939,
-              "color": "--affine-black",
-              "fillColor": "--affine-white",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": {
+                "dark": "#000000",
+                "light": "#ffffff"
+              },
               "filled": true,
               "fontFamily": "blocksuite:surface:Poppins",
               "fontSize": 16,
@@ -117,7 +129,7 @@
               },
               "shapeStyle": "General",
               "shapeType": "rect",
-              "strokeColor": "--affine-palette-line-purple",
+              "strokeColor": "#6e52df",
               "strokeStyle": "solid",
               "strokeWidth": 3,
               "text": {
@@ -136,8 +148,14 @@
             "1IN8YOdsCP": {
               "index": "a0",
               "seed": 205695803,
-              "color": "--affine-black",
-              "fillColor": "--affine-white",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": {
+                "dark": "#000000",
+                "light": "#ffffff"
+              },
               "filled": true,
               "fontFamily": "blocksuite:surface:Poppins",
               "fontSize": 16,
@@ -155,7 +173,7 @@
               },
               "shapeStyle": "General",
               "shapeType": "rect",
-              "strokeColor": "--affine-palette-line-magenta",
+              "strokeColor": "#e96cab",
               "strokeStyle": "solid",
               "strokeWidth": 3,
               "text": {
@@ -174,8 +192,14 @@
             "iFQ9oVR0KN": {
               "index": "a0",
               "seed": 585656351,
-              "color": "--affine-black",
-              "fillColor": "--affine-white",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": {
+                "dark": "#000000",
+                "light": "#ffffff"
+              },
               "filled": true,
               "fontFamily": "blocksuite:surface:Poppins",
               "fontSize": 16,
@@ -193,7 +217,7 @@
               },
               "shapeStyle": "General",
               "shapeType": "rect",
-              "strokeColor": "--affine-palette-line-orange",
+              "strokeColor": "#ffebd5",
               "strokeStyle": "solid",
               "strokeWidth": 3,
               "text": {
@@ -226,7 +250,7 @@
                   }
                 ]
               },
-              "background": "--affine-palette-transparent",
+              "background": "transparent",
               "xywh": "[-542.4695816040039,-292.0061340332031,798.42578125,414.50390625]",
               "index": "Zz",
               "childElementIds": {

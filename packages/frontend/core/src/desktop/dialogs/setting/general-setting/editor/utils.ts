@@ -1,48 +1,48 @@
-import { FontWeight } from '@blocksuite/affine/blocks';
+import {
+  type Color,
+  ColorScheme,
+  FontWeight,
+  type Palette,
+  resolveColor,
+} from '@blocksuite/affine/blocks';
+import { isEqual } from 'lodash-es';
 import { useTheme } from 'next-themes';
 
-function getColorFromMap(
-  color: string | { normal: string } | { light: string; dark: string },
-  colorMap: { [key: string]: string },
-  theme: 'light' | 'dark' = 'light'
-):
-  | {
-      value: string;
-      key: string;
-    }
-  | undefined {
-  if (typeof color === 'string') {
-    return { value: color, key: colorMap[color] };
-  }
-
-  if ('normal' in color) {
-    return {
-      value: color.normal,
-      key: colorMap[color.normal],
-    };
-  }
-
-  if ('light' in color && 'dark' in color) {
-    return {
-      value: color[theme],
-      key: colorMap[color[theme]],
-    };
-  }
-
-  return undefined;
-}
-
-export const useColor = () => {
+export const useResolvedTheme = () => {
   const { resolvedTheme } = useTheme();
-  return (
-    color: string | { normal: string } | { light: string; dark: string },
-    colorMap: { [key: string]: string }
-  ) =>
-    getColorFromMap(
-      color,
-      colorMap,
-      resolvedTheme as 'light' | 'dark' | undefined
-    );
+  return resolvedTheme === ColorScheme.Dark
+    ? ColorScheme.Dark
+    : ColorScheme.Light;
+};
+
+export const usePalettes = (
+  originalPalettes: Palette[],
+  defaultColor: Color
+) => {
+  const theme = useResolvedTheme();
+  const isDark = theme === ColorScheme.Dark;
+  const palettes = originalPalettes.map(({ key, value }) => {
+    // Title needs to be inverted.
+    if (isDark) {
+      if (key === 'Black') {
+        key = 'White';
+      } else if (key === 'White') {
+        key = 'Black';
+      }
+    }
+
+    return {
+      key,
+      value,
+      resolvedValue: resolveColor(value, theme),
+    };
+  });
+  return {
+    palettes,
+    getCurrentColor: (color: Color) =>
+      palettes.find(({ value }) => isEqual(value, color)) ||
+      palettes.find(({ value }) => isEqual(value, defaultColor)),
+  };
 };
 
 export const sortedFontWeightEntries = Object.entries(FontWeight).sort(

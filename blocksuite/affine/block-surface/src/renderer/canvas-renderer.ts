@@ -21,9 +21,9 @@ import type { ElementRenderer } from './elements/index.js';
 import type { Overlay } from './overlay.js';
 
 type EnvProvider = {
-  generateColorProperty: (color: Color, fallback: string) => string;
+  generateColorProperty: (color: Color, fallback?: Color) => string;
   getColorScheme: () => ColorScheme;
-  getColorValue: (color: Color, fallback?: string, real?: boolean) => string;
+  getColorValue: (color: Color, fallback?: Color, real?: boolean) => string;
   getPropertyValue: (property: string) => string;
   selectedElements?: () => string[];
 };
@@ -368,10 +368,9 @@ export class CanvasRenderer {
     this._disposables.dispose();
   }
 
-  generateColorProperty(color: Color, fallback: string) {
+  generateColorProperty(color: Color, fallback?: Color) {
     return (
-      this.provider.generateColorProperty?.(color, fallback) ??
-      (fallback.startsWith('--') ? `var(${fallback})` : fallback)
+      this.provider.generateColorProperty?.(color, fallback) ?? 'transparent'
     );
   }
 
@@ -409,7 +408,7 @@ export class CanvasRenderer {
     return this.provider.getColorScheme?.() ?? ColorScheme.Light;
   }
 
-  getColorValue(color: Color, fallback?: string, real?: boolean) {
+  getColorValue(color: Color, fallback?: Color, real?: boolean) {
     return (
       this.provider.getColorValue?.(color, fallback, real) ?? 'transparent'
     );

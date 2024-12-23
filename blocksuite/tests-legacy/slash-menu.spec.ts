@@ -885,7 +885,7 @@ test.describe('slash menu with customize menu', () => {
             { groupName: 'Custom Menu' },
             {
               name: 'Custom Menu Item',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              // oxlint-disable-next-line @typescript-eslint/no-explicit-any
               icon: '' as any,
               action: () => {
                 // do nothing
@@ -893,7 +893,7 @@ test.describe('slash menu with customize menu', () => {
             },
             {
               name: 'Custom Menu Item',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              // oxlint-disable-next-line @typescript-eslint/no-explicit-any
               icon: '' as any,
               action: () => {
                 // do nothing

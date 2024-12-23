@@ -4,6 +4,7 @@ import {
   NoteDisplayMode,
 } from '@blocksuite/affine-model';
 import { expect } from '@playwright/test';
+import { lightThemeV2 } from '@toeverything/theme/v2';
 
 import {
   activeNoteInEdgeless,
@@ -304,14 +305,17 @@ test('change note color', async ({ page }) => {
   await assertEdgelessNoteBackground(
     page,
     noteId,
-    '--affine-v2-edgeless-note-white'
+    lightThemeV2['edgeless/note/white']
   );
 
   await selectNoteInEdgeless(page, noteId);
   await triggerComponentToolbarAction(page, 'changeNoteColor');
-  const color = '--affine-v2-edgeless-note-green';
-  await changeEdgelessNoteBackground(page, color);
-  await assertEdgelessNoteBackground(page, noteId, color);
+  await changeEdgelessNoteBackground(page, 'Green');
+  await assertEdgelessNoteBackground(
+    page,
+    noteId,
+    lightThemeV2['edgeless/note/green']
+  );
 });
 
 test('cursor for active and inactive state', async ({ page }) => {

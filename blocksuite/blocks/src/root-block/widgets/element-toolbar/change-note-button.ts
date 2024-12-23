@@ -14,10 +14,10 @@ import {
 } from '@blocksuite/affine-components/toolbar';
 import {
   type ColorScheme,
-  DEFAULT_NOTE_BACKGROUND_COLOR,
-  NOTE_BACKGROUND_PALETTES,
+  DefaultTheme,
   type NoteBlockModel,
   NoteDisplayMode,
+  resolveColor,
   type StrokeStyle,
 } from '@blocksuite/affine-model';
 import { ThemeProvider } from '@blocksuite/affine-shared/services';
@@ -43,7 +43,6 @@ import {
   packColor,
   packColorsWithColorScheme,
 } from '../../edgeless/components/color-picker/utils.js';
-import type { ColorEvent } from '../../edgeless/components/panel/color-panel.js';
 import {
   type LineStyleEvent,
   LineStylesPanel,
@@ -68,20 +67,26 @@ const DisplayModeMap = {
 function getMostCommonBackground(
   elements: NoteBlockModel[],
   colorScheme: ColorScheme
-): string | null {
-  const colors = countBy(elements, (ele: NoteBlockModel) => {
-    return typeof ele.background === 'object'
-      ? (ele.background[colorScheme] ?? ele.background.normal ?? null)
-      : ele.background;
-  });
+): string {
+  const colors = countBy(elements, (ele: NoteBlockModel) =>
+    resolveColor(ele.background, colorScheme)
+  );
   const max = maxBy(Object.entries(colors), ([_k, count]) => count);
-  return max ? (max[0] as string) : null;
+  return max
+    ? (max[0] as string)
+    : resolveColor(DefaultTheme.noteBackgrounColor, colorScheme);
 }
 
 export class EdgelessChangeNoteButton extends WithDisposable(LitElement) {
   get crud() {
     return this.edgeless.std.get(EdgelessCRUDIdentifier);
   }
+
+  private readonly _setBackground = (background: string) => {
+    this.notes.forEach(element => {
+      this.crud.updateElement(element.id, { background });
+    });
+  };
 
   private readonly _setBorderRadius = (borderRadius: number) => {
     this.notes.forEach(note => {
@@ -112,18 +117,19 @@ export class EdgelessChangeNoteButton extends WithDisposable(LitElement) {
     });
   };
 
-  pickColor = (event: PickColorEvent) => {
-    if (event.type === 'pick') {
+  pickColor = (e: PickColorEvent) => {
+    const field = 'background';
+
+    if (e.type === 'pick') {
+      const color = e.detail.value;
       this.notes.forEach(element => {
-        const props = packColor('background', { ...event.detail });
+        const props = packColor(field, color);
         this.crud.updateElement(element.id, props);
       });
       return;
     }
 
-    this.notes.forEach(ele =>
-      ele[event.type === 'start' ? 'stash' : 'pop']('background')
-    );
+    this.notes.forEach(ele => ele[e.type === 'start' ? 'stash' : 'pop'](field));
   };
 
   private get _advancedVisibilityEnabled() {
@@ -143,12 +149,6 @@ export class EdgelessChangeNoteButton extends WithDisposable(LitElement) {
     if (!surfaceService) return;
 
     this.edgeless.slots.toggleNoteSlicer.emit();
-  }
-
-  private _setBackground(background: string) {
-    this.notes.forEach(element => {
-      this.crud.updateElement(element.id, { background });
-    });
   }
 
   private _setCollapse() {
@@ -262,9 +262,7 @@ export class EdgelessChangeNoteButton extends WithDisposable(LitElement) {
     const { shadowType, borderRadius, borderSize, borderStyle } =
       edgeless.style;
     const colorScheme = this.edgeless.surface.renderer.getColorScheme();
-    const background =
-      getMostCommonBackground(this.notes, colorScheme) ??
-      DEFAULT_NOTE_BACKGROUND_COLOR;
+    const background = getMostCommonBackground(this.notes, colorScheme);
 
     const { collapse } = edgeless;
     const scale = edgeless.scale ?? 1;
@@ -317,9 +315,11 @@ export class EdgelessChangeNoteButton extends WithDisposable(LitElement) {
                   .label=${'Background'}
                   .pick=${this.pickColor}
                   .color=${background}
+                  .colorPanelClass=${'small'}
                   .colorType=${type}
                   .colors=${colors}
-                  .palettes=${NOTE_BACKGROUND_PALETTES}
+                  .theme=${colorScheme}
+                  .palettes=${DefaultTheme.NoteBackgroundColorPalettes}
                 >
                 </edgeless-color-picker-button>
               `;
@@ -339,9 +339,11 @@ export class EdgelessChangeNoteButton extends WithDisposable(LitElement) {
                 `}
               >
                 <edgeless-color-panel
+                  class="small"
                   .value=${background}
-                  .options=${NOTE_BACKGROUND_PALETTES}
-                  @select=${(e: ColorEvent) => this._setBackground(e.detail)}
+                  .theme=${colorScheme}
+                  .palettes=${DefaultTheme.NoteBackgroundColorPalettes}
+                  @select=${this._setBackground}
                 >
                 </edgeless-color-panel>
               </editor-menu-button>

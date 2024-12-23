@@ -1,4 +1,8 @@
-import { PALETTES, type StrokeStyle } from '@blocksuite/affine-model';
+import {
+  type ColorScheme,
+  DefaultTheme,
+  type StrokeStyle,
+} from '@blocksuite/affine-model';
 import { WithDisposable } from '@blocksuite/global/utils';
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
@@ -38,8 +42,9 @@ export class StrokeStylePanel extends WithDisposable(LitElement) {
       <edgeless-color-panel
         role="listbox"
         aria-label="Border colors"
-        .palettes=${PALETTES}
         .value=${this.strokeColor}
+        .theme=${this.theme}
+        .palettes=${DefaultTheme.Palettes}
         .hollowCircle=${this.hollowCircle}
         @select=${(e: ColorEvent) => this.setStrokeColor(e)}
       >
@@ -64,6 +69,9 @@ export class StrokeStylePanel extends WithDisposable(LitElement) {
 
   @property({ attribute: false })
   accessor strokeWidth!: number;
+
+  @property({ attribute: false })
+  accessor theme!: ColorScheme;
 }
 
 declare global {

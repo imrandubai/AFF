@@ -1,4 +1,3 @@
-import { themeToVar } from '@toeverything/theme/v2';
 import { z } from 'zod';
 
 import { createEnumMap } from '../utils/enum.js';
@@ -8,40 +7,6 @@ export const NOTE_MIN_HEIGHT = 92;
 
 export const DEFAULT_NOTE_WIDTH = NOTE_MIN_WIDTH;
 export const DEFAULT_NOTE_HEIGHT = NOTE_MIN_HEIGHT;
-
-export const NoteBackgroundColor = {
-  Yellow: themeToVar('edgeless/note/yellow'),
-  Orange: themeToVar('edgeless/note/orange'),
-  Red: themeToVar('edgeless/note/red'),
-  Magenta: themeToVar('edgeless/note/magenta'),
-  Purple: themeToVar('edgeless/note/purple'),
-  Blue: themeToVar('edgeless/note/blue'),
-  Teal: themeToVar('edgeless/note/teal'),
-  Green: themeToVar('edgeless/note/green'),
-  Black: themeToVar('edgeless/note/black'),
-  Grey: themeToVar('edgeless/note/grey'),
-  White: themeToVar('edgeless/note/white'),
-} as const;
-
-export const NoteBackgroundColorMap = createEnumMap(NoteBackgroundColor);
-
-export const NOTE_BACKGROUND_PALETTES = [
-  NoteBackgroundColor.Yellow,
-  NoteBackgroundColor.Orange,
-  NoteBackgroundColor.Red,
-  NoteBackgroundColor.Magenta,
-  NoteBackgroundColor.Purple,
-  NoteBackgroundColor.Blue,
-  NoteBackgroundColor.Teal,
-  NoteBackgroundColor.Green,
-  NoteBackgroundColor.Black,
-  NoteBackgroundColor.Grey,
-  NoteBackgroundColor.White,
-] as const;
-
-export const NoteBackgroundPaletteEnum = z.enum(NOTE_BACKGROUND_PALETTES);
-
-export const DEFAULT_NOTE_BACKGROUND_COLOR = NoteBackgroundColor.White;
 
 export enum NoteShadow {
   Box = '--affine-note-shadow-box',

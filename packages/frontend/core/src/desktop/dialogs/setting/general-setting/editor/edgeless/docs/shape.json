@@ -32,8 +32,11 @@
             "e6t9tKz8Sy": {
               "index": "a5",
               "seed": 338503204,
-              "color": "--affine-palette-line-black",
-              "fillColor": "--affine-palette-shape-yellow",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": "#fffbd5",
               "filled": true,
               "fontFamily": "blocksuite:surface:Inter",
               "fontSize": 12,
@@ -45,7 +48,7 @@
               "shadow": null,
               "shapeStyle": "General",
               "shapeType": "ellipse",
-              "strokeColor": "--affine-palette-line-yellow",
+              "strokeColor": "#fcd34d",
               "strokeStyle": "solid",
               "strokeWidth": 2,
               "textResizing": 1,
@@ -56,8 +59,11 @@
             "F8qB_zDC5Q": {
               "index": "a6",
               "seed": 1896265661,
-              "color": "--affine-palette-line-black",
-              "fillColor": "--affine-palette-shape-yellow",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": "#fffbd5",
               "filled": true,
               "fontFamily": "blocksuite:surface:Inter",
               "fontSize": 12,
@@ -69,7 +75,7 @@
               "shadow": null,
               "shapeStyle": "General",
               "shapeType": "rect",
-              "strokeColor": "--affine-palette-line-yellow",
+              "strokeColor": "#fcd34d",
               "strokeStyle": "solid",
               "strokeWidth": 2,
               "textResizing": 1,
@@ -80,8 +86,11 @@
             "mPR44JBpcd": {
               "index": "a7",
               "seed": 2073974140,
-              "color": "--affine-palette-line-black",
-              "fillColor": "--affine-palette-shape-yellow",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": "#fffbd5",
               "filled": true,
               "fontFamily": "blocksuite:surface:Inter",
               "fontSize": 12,
@@ -93,7 +102,7 @@
               "shadow": null,
               "shapeStyle": "General",
               "shapeType": "diamond",
-              "strokeColor": "--affine-palette-line-yellow",
+              "strokeColor": "#fcd34d",
               "strokeStyle": "solid",
               "strokeWidth": 2,
               "textResizing": 1,
@@ -104,8 +113,11 @@
             "cmtluc3FWR": {
               "index": "a8",
               "seed": 1457248130,
-              "color": "--affine-palette-line-black",
-              "fillColor": "--affine-palette-shape-yellow",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": "#fffbd5",
               "filled": true,
               "fontFamily": "blocksuite:surface:Inter",
               "fontSize": 12,
@@ -117,7 +129,7 @@
               "shadow": null,
               "shapeStyle": "General",
               "shapeType": "triangle",
-              "strokeColor": "--affine-palette-line-yellow",
+              "strokeColor": "#fcd34d",
               "strokeStyle": "solid",
               "strokeWidth": 2,
               "textResizing": 1,
@@ -128,8 +140,11 @@
             "knt_TKvACR": {
               "index": "a9",
               "seed": 1896265661,
-              "color": "--affine-palette-line-black",
-              "fillColor": "--affine-palette-shape-yellow",
+              "color": {
+                "dark": "#ffffff",
+                "light": "#000000"
+              },
+              "fillColor": "#fffbd5",
               "filled": true,
               "fontFamily": "blocksuite:surface:Inter",
               "fontSize": 12,
@@ -141,7 +156,7 @@
               "shadow": null,
               "shapeStyle": "General",
               "shapeType": "rect",
-              "strokeColor": "--affine-palette-line-yellow",
+              "strokeColor": "#fcd34d",
               "strokeStyle": "solid",
               "strokeWidth": 2,
               "textResizing": 1,
@@ -166,7 +181,7 @@
                   }
                 ]
               },
-              "background": "--affine-palette-transparent",
+              "background": "transparent",
               "xywh": "[-23.859796066464128,332.87664265400565,881.5090292421075,190.55181066780085]",
               "index": "a0"
             },
