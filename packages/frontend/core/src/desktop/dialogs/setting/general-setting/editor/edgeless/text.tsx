@@ -12,8 +12,8 @@ import {
   FontFamilyMap,
   FontStyle,
   FontWeightMap,
-  LineColor,
-  LineColorMap,
+  StrokeColor,
+  StrokeColorMap,
   TextAlign,
 } from '@blocksuite/affine/blocks';
 import type { Doc } from '@blocksuite/affine/store';
@@ -72,7 +72,7 @@ export const TextSettings = () => {
 
   const colorItems = useMemo(() => {
     const { color } = settings['affine:edgeless-text'];
-    return Object.entries(LineColor).map(([name, value]) => {
+    return Object.entries(StrokeColor).map(([name, value]) => {
       const handler = () => {
         editorSetting.set('affine:edgeless-text', { color: value });
       };
@@ -137,7 +137,7 @@ export const TextSettings = () => {
 
   const currentColor = useMemo(() => {
     const { color } = settings['affine:edgeless-text'];
-    return getColorFromMap(color, LineColorMap);
+    return getColorFromMap(color, StrokeColorMap);
   }, [getColorFromMap, settings]);
 
   const getElements = useCallback((doc: Doc) => {

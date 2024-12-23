@@ -7,6 +7,7 @@ import type {
   RootBlockModel,
 } from '@blocks/index.js';
 import {
+  DEFAULT_NOTE_BACKGROUND_COLOR,
   DEFAULT_NOTE_HEIGHT,
   DEFAULT_NOTE_WIDTH,
 } from '@blocksuite/affine-model';
@@ -112,7 +113,7 @@ export const defaultStore = {
           'sys:children': ['2'],
           'sys:version': 1,
           'prop:xywh': `[0,0,${DEFAULT_NOTE_WIDTH}, ${DEFAULT_NOTE_HEIGHT}]`,
-          'prop:background': '--affine-note-background-white',
+          'prop:background': DEFAULT_NOTE_BACKGROUND_COLOR,
           'prop:index': 'a0',
           'prop:hidden': false,
           'prop:displayMode': 'both',

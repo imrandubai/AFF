@@ -14,9 +14,9 @@ import {
   FontFamilyMap,
   FontStyle,
   FontWeightMap,
-  LineColor,
-  LineColorMap,
   PointStyle,
+  StrokeColor,
+  StrokeColorMap,
   StrokeStyle,
   TextAlign,
 } from '@blocksuite/affine/blocks';
@@ -152,12 +152,12 @@ export const ConnectorSettings = () => {
 
   const currentColor = useMemo(() => {
     const color = settings.connector.stroke;
-    return getColorFromMap(color, LineColorMap);
+    return getColorFromMap(color, StrokeColorMap);
   }, [getColorFromMap, settings.connector.stroke]);
 
   const colorItems = useMemo(() => {
     const { stroke } = settings.connector;
-    return Object.entries(LineColor).map(([name, value]) => {
+    return Object.entries(StrokeColor).map(([name, value]) => {
       const handler = () => {
         editorSetting.set('connector', { stroke: value });
       };
@@ -322,7 +322,7 @@ export const ConnectorSettings = () => {
 
   const textColorItems = useMemo(() => {
     const { color } = settings.connector.labelStyle;
-    return Object.entries(LineColor).map(([name, value]) => {
+    return Object.entries(StrokeColor).map(([name, value]) => {
       const handler = () => {
         editorSetting.set('connector', {
           labelStyle: {
@@ -346,7 +346,7 @@ export const ConnectorSettings = () => {
 
   const textColor = useMemo(() => {
     const { color } = settings.connector.labelStyle;
-    return getColorFromMap(color, LineColorMap);
+    return getColorFromMap(color, StrokeColorMap);
   }, [getColorFromMap, settings]);
 
   const getElements = useCallback((doc: Doc) => {

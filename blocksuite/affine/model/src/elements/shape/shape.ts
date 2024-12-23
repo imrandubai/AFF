@@ -24,11 +24,11 @@ import {
   FontFamily,
   FontStyle,
   FontWeight,
-  LineColor,
   ShapeFillColor,
   ShapeStyle,
   ShapeTextFontSize,
   ShapeType,
+  StrokeColor,
   StrokeStyle,
   TextAlign,
   TextResizing,
@@ -160,7 +160,7 @@ export class ShapeElementModel extends GfxPrimitiveElementModel<ShapeProps> {
   accessor shapeType: ShapeType = ShapeType.Rect;
 
   @field()
-  accessor strokeColor: Color = LineColor.Yellow;
+  accessor strokeColor: Color = StrokeColor.Yellow;
 
   @field()
   accessor strokeStyle: StrokeStyle = StrokeStyle.Solid;
@@ -246,7 +246,7 @@ export class LocalShapeElementModel extends GfxLocalElementModel {
   accessor shapeType: ShapeType = ShapeType.Rect;
 
   @prop()
-  accessor strokeColor: Color = LineColor.Yellow;
+  accessor strokeColor: Color = StrokeColor.Yellow;
 
   @prop()
   accessor strokeStyle: StrokeStyle = StrokeStyle.Solid;

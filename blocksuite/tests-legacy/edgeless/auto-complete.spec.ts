@@ -1,4 +1,8 @@
-import { DEFAULT_NOTE_BACKGROUND_COLOR } from '@blocksuite/affine-model';
+import {
+  DEFAULT_NOTE_BACKGROUND_COLOR,
+  ShapeFillColor,
+  StrokeColor,
+} from '@blocksuite/affine-model';
 import { expect, type Page } from '@playwright/test';
 
 import { clickView, moveView } from '../utils/actions/click.js';
@@ -135,10 +139,10 @@ test.describe('auto-complete', () => {
       await createShapeElement(page, [0, 0], [100, 100], Shape.Square);
       await assertSelectedBound(page, [0, 0, 100, 100]);
       await triggerComponentToolbarAction(page, 'changeShapeStrokeColor');
-      const lineColor = '--affine-palette-line-red';
+      const lineColor = StrokeColor.Red;
       await changeShapeStrokeColor(page, lineColor);
       await triggerComponentToolbarAction(page, 'changeShapeFillColor');
-      const color = '--affine-palette-shape-green';
+      const color = ShapeFillColor.Green;
       await changeShapeFillColor(page, color);
       await dragBetweenViewCoords(page, [120, 50], [200, 0]);
 
@@ -184,7 +188,7 @@ test.describe('auto-complete', () => {
       await waitNextFrame(page);
 
       await triggerComponentToolbarAction(page, 'changeNoteColor');
-      const noteColor = '--affine-note-background-red';
+      const noteColor = '--affine-v2-edgeless-note-red';
       await changeEdgelessNoteBackground(page, noteColor);
 
       // move to arrow icon

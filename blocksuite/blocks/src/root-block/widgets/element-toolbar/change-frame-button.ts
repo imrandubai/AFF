@@ -9,9 +9,9 @@ import { renderToolbarSeparator } from '@blocksuite/affine-components/toolbar';
 import {
   type ColorScheme,
   DEFAULT_NOTE_HEIGHT,
-  FRAME_BACKGROUND_COLORS,
   type FrameBlockModel,
   NoteDisplayMode,
+  PALETTES,
 } from '@blocksuite/affine-model';
 import { matchFlavours } from '@blocksuite/affine-shared/utils';
 import { GfxExtensionIdentifier } from '@blocksuite/block-std/gfx';
@@ -130,8 +130,7 @@ export class EdgelessChangeFrameButton extends WithDisposable(LitElement) {
     const len = frames.length;
     const onlyOne = len === 1;
     const colorScheme = this.edgeless.surface.renderer.getColorScheme();
-    const background =
-      getMostCommonColor(frames, colorScheme) ?? '--affine-palette-transparent';
+    const background = getMostCommonColor(frames, colorScheme) ?? 'transparent';
 
     return join(
       [
@@ -204,7 +203,7 @@ export class EdgelessChangeFrameButton extends WithDisposable(LitElement) {
                 .color=${background}
                 .colors=${colors}
                 .colorType=${type}
-                .palettes=${FRAME_BACKGROUND_COLORS}
+                .palettes=${PALETTES}
               >
               </edgeless-color-picker-button>
             `;
@@ -225,7 +224,7 @@ export class EdgelessChangeFrameButton extends WithDisposable(LitElement) {
             >
               <edgeless-color-panel
                 .value=${background}
-                .options=${FRAME_BACKGROUND_COLORS}
+                .palettes=${PALETTES}
                 @select=${(e: ColorEvent) => this._setFrameBackground(e.detail)}
               >
               </edgeless-color-panel>

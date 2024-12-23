@@ -4,6 +4,7 @@ import type {
   ShapeElementModel,
   SurfaceBlockModel,
 } from '@blocksuite/blocks';
+import { StrokeColor } from '@blocksuite/blocks';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { wait } from '../utils/common.js';
@@ -71,7 +72,7 @@ describe('element model', () => {
     const element = model.getElementById(id)! as ShapeElementModel;
 
     expect(element.index).toBe('a0');
-    expect(element.strokeColor).toBe('--affine-palette-line-yellow');
+    expect(element.strokeColor).toBe(StrokeColor.Yellow);
     expect(element.strokeWidth).toBe(4);
   });
 
@@ -93,9 +94,7 @@ describe('element model', () => {
 
     const element = model.getElementById(id)! as ShapeElementModel;
 
-    expect(element.yMap.get('strokeColor')).toBe(
-      '--affine-palette-line-yellow'
-    );
+    expect(element.yMap.get('strokeColor')).toBe(StrokeColor.Yellow);
 
     element.strokeColor = '--affine-palette-line-black';
     expect(element.yMap.get('strokeColor')).toBe('--affine-palette-line-black');

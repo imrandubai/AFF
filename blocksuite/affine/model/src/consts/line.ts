@@ -13,6 +13,20 @@ export enum LineWidth {
   Two = 2,
 }
 
+export const LINE_WIDTHS = [
+  LineWidth.Two,
+  LineWidth.Four,
+  LineWidth.Six,
+  LineWidth.Eight,
+  LineWidth.Ten,
+  LineWidth.Twelve,
+];
+
+/**
+ * Use `StrokeColor` instead.
+ *
+ * @deprecated
+ */
 export enum LineColor {
   Black = '--affine-palette-line-black',
   Blue = '--affine-palette-line-blue',

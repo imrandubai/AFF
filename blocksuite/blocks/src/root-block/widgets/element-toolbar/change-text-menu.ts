@@ -18,7 +18,7 @@ import {
   FontFamily,
   FontStyle,
   FontWeight,
-  LINE_COLORS,
+  PALETTES,
   ShapeElementModel,
   TextAlign,
   TextElementModel,
@@ -391,7 +391,7 @@ export class EdgelessChangeTextMenu extends WithDisposable(LitElement) {
                 .color=${selectedColor}
                 .colors=${colors}
                 .colorType=${type}
-                .palettes=${LINE_COLORS}
+                .palettes=${PALETTES}
               >
               </edgeless-color-picker-button>
             `;
@@ -412,6 +412,7 @@ export class EdgelessChangeTextMenu extends WithDisposable(LitElement) {
             >
               <edgeless-color-panel
                 .value=${selectedColor}
+                .palettes=${PALETTES}
                 @select=${this._setTextColor}
               ></edgeless-color-panel>
             </editor-menu-button>

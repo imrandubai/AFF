@@ -21,11 +21,11 @@ import {
   FontStyle,
   FontWeightMap,
   getShapeName,
-  LineColor,
-  LineColorMap,
   ShapeFillColor,
   ShapeStyle,
   ShapeType,
+  StrokeColor,
+  StrokeColorMap,
   StrokeStyle,
   TextAlign,
 } from '@blocksuite/affine/blocks';
@@ -226,7 +226,7 @@ export const ShapeSettings = () => {
 
   const borderColorItems = useMemo(() => {
     const { strokeColor } = settings[`shape:${currentShape}`];
-    return Object.entries(LineColor).map(([name, value]) => {
+    return Object.entries(StrokeColor).map(([name, value]) => {
       const handler = () => {
         editorSetting.set(`shape:${currentShape}`, { strokeColor: value });
       };
@@ -316,7 +316,7 @@ export const ShapeSettings = () => {
 
   const textColorItems = useMemo(() => {
     const { color } = settings[`shape:${currentShape}`];
-    return Object.entries(LineColor).map(([name, value]) => {
+    return Object.entries(StrokeColor).map(([name, value]) => {
       const handler = () => {
         editorSetting.set(`shape:${currentShape}`, { color: value });
       };
@@ -375,12 +375,12 @@ export const ShapeSettings = () => {
 
   const borderColor = useMemo(() => {
     const color = settings[`shape:${currentShape}`].strokeColor;
-    return getColorFromMap(color, LineColorMap);
+    return getColorFromMap(color, StrokeColorMap);
   }, [currentShape, getColorFromMap, settings]);
 
   const textColor = useMemo(() => {
     const color = settings[`shape:${currentShape}`].color;
-    return getColorFromMap(color, LineColorMap);
+    return getColorFromMap(color, StrokeColorMap);
   }, [currentShape, getColorFromMap, settings]);
 
   const height = currentDoc === 'flow' ? 456 : 180;

@@ -1,9 +1,9 @@
 import {
+  Black,
   DEFAULT_ROUGHNESS,
-  LineColor,
   LineWidth,
-  ShapeFillColor,
   StrokeStyle,
+  White,
 } from '@blocksuite/affine-model';
 
 export const NOTE_OVERLAY_OFFSET_X = 6;
@@ -48,9 +48,9 @@ export const SurfaceColor = '#6046FE';
 export const NoteColor = '#1E96EB';
 export const BlendColor = '#7D91FF';
 
-export const SHAPE_TEXT_COLOR_PURE_WHITE = LineColor.White;
-export const SHAPE_TEXT_COLOR_PURE_BLACK = LineColor.Black;
-export const SHAPE_FILL_COLOR_BLACK = ShapeFillColor.Black;
+export const SHAPE_TEXT_COLOR_PURE_WHITE = White;
+export const SHAPE_TEXT_COLOR_PURE_BLACK = Black;
+export const SHAPE_FILL_COLOR_BLACK = Black;
 
 export const AI_CHAT_BLOCK_MIN_WIDTH = 260;
 export const AI_CHAT_BLOCK_MIN_HEIGHT = 160;

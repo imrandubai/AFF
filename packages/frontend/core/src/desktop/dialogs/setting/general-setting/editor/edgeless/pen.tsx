@@ -2,7 +2,7 @@ import { MenuItem, MenuTrigger, Slider } from '@affine/component';
 import { SettingRow } from '@affine/component/setting-components';
 import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { useI18n } from '@affine/i18n';
-import { LineColor, LineColorMap } from '@blocksuite/affine/blocks';
+import { StrokeColor, StrokeColorMap } from '@blocksuite/affine/blocks';
 import type { Doc } from '@blocksuite/affine/store';
 import { useFramework, useLiveData } from '@toeverything/infra';
 import { useCallback, useMemo } from 'react';
@@ -22,12 +22,12 @@ export const PenSettings = () => {
   const getColorFromMap = useColor();
 
   const currentColor = useMemo(() => {
-    return getColorFromMap(settings.brush.color, LineColorMap);
+    return getColorFromMap(settings.brush.color, StrokeColorMap);
   }, [getColorFromMap, settings.brush.color]);
 
   const colorItems = useMemo(() => {
     const { color } = settings.brush;
-    return Object.entries(LineColor).map(([name, value]) => {
+    return Object.entries(StrokeColor).map(([name, value]) => {
       const handler = () => {
         editorSetting.set('brush', { color: value });
       };

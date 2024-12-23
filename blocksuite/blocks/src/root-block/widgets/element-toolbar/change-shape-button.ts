@@ -21,8 +21,7 @@ import {
   getShapeType,
   LineWidth,
   MindmapElementModel,
-  SHAPE_FILL_COLORS,
-  SHAPE_STROKE_COLORS,
+  PALETTES,
   ShapeStyle,
   StrokeStyle,
 } from '@blocksuite/affine-model';
@@ -96,7 +95,7 @@ function getMostCommonFillColor(
         ? (ele.fillColor[colorScheme] ?? ele.fillColor.normal ?? null)
         : ele.fillColor;
     }
-    return '--affine-palette-transparent';
+    return 'transparent';
   });
   const max = maxBy(Object.entries(colors), ([_k, count]) => count);
   return max ? (max[0] as string) : null;
@@ -345,7 +344,7 @@ export class EdgelessChangeShapeButton extends WithDisposable(LitElement) {
                 .color=${selectedFillColor}
                 .colors=${colors}
                 .colorType=${type}
-                .palettes=${SHAPE_FILL_COLORS}
+                .palettes=${PALETTES}
               >
               </edgeless-color-picker-button>
             `;
@@ -368,7 +367,7 @@ export class EdgelessChangeShapeButton extends WithDisposable(LitElement) {
                 role="listbox"
                 aria-label="Fill colors"
                 .value=${selectedFillColor}
-                .options=${SHAPE_FILL_COLORS}
+                .palettes=${PALETTES}
                 @select=${(e: ColorEvent) => this._setShapeFillColor(e.detail)}
               >
               </edgeless-color-panel>
@@ -393,7 +392,7 @@ export class EdgelessChangeShapeButton extends WithDisposable(LitElement) {
                 .color=${selectedStrokeColor}
                 .colors=${colors}
                 .colorType=${type}
-                .palettes=${SHAPE_STROKE_COLORS}
+                .palettes=${PALETTES}
                 .hollowCircle=${true}
               >
                 <div

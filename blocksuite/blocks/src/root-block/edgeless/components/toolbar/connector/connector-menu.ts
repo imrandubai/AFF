@@ -6,6 +6,7 @@ import {
 import {
   ConnectorMode,
   DEFAULT_CONNECTOR_COLOR,
+  STROKE_COLORS,
 } from '@blocksuite/affine-model';
 import {
   EditPropsStore,
@@ -127,13 +128,15 @@ export class EdgelessConnectorMenu extends EdgelessToolbarToolMixin(
           >
           </edgeless-line-width-panel>
           <div class="submenu-divider"></div>
-          <edgeless-one-row-color-panel
+          <edgeless-color-panel
+            class="one-way"
             .value=${color}
+            .palettes=${STROKE_COLORS}
             .hasTransparent=${!this.edgeless.doc.awarenessStore.getFlag(
               'enable_color_picker'
             )}
             @select=${(e: ColorEvent) => this.onChange({ stroke: e.detail })}
-          ></edgeless-one-row-color-panel>
+          ></edgeless-color-panel>
         </div>
       </edgeless-slide-menu>
     `;

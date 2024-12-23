@@ -3,6 +3,7 @@ import { WithDisposable } from '@blocksuite/global/utils';
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { ColorEvent } from '../panel/color-panel.js';
@@ -12,7 +13,7 @@ import type {
   PickColorEvent,
   PickColorType,
 } from './types.js';
-import { keepColor, preprocessColor } from './utils.js';
+import { keepColor, preprocessColor, rgbaToHex8 } from './utils.js';
 
 type Type = 'normal' | 'custom';
 
@@ -38,15 +39,37 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
   get customButtonStyle() {
     let b = 'transparent';
     let c = 'transparent';
-    if (!this.isCSSVariable) {
+
+    if (!this.isCustomColor) {
+      return { '--b': b, '--c': c };
+    }
+
+    if (this.isCSSVariable) {
+      if (!this.color.endsWith('transparent')) {
+        b = 'var(--affine-background-overlay-panel-color)';
+        c = keepColor(
+          rgbaToHex8(
+            preprocessColor(window.getComputedStyle(this))({
+              type: 'normal',
+              value: this.color,
+            }).rgba
+          )
+        );
+      }
+    } else {
       b = 'var(--affine-background-overlay-panel-color)';
       c = keepColor(this.color);
     }
+
     return { '--b': b, '--c': c };
   }
 
   get isCSSVariable() {
     return this.color.startsWith('--');
+  }
+
+  get isCustomColor() {
+    return !this.palettes.includes(this.color);
   }
 
   get tabContentPadding() {
@@ -101,7 +124,9 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
                 <slot name="separator"></slot>
                 <edgeless-color-panel
                   role="listbox"
+                  class=${ifDefined(this.colorPanelClass)}
                   .value=${this.color}
+                  .palettes=${this.palettes}
                   .options=${this.palettes}
                   .hollowCircle=${this.hollowCircle}
                   .openColorPicker=${this.switchToCustomTab}
@@ -111,7 +136,7 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
                   <edgeless-color-custom-button
                     slot="custom"
                     style=${styleMap(this.customButtonStyle)}
-                    .active=${!this.isCSSVariable}
+                    ?active=${this.isCustomColor}
                     @click=${this.switchToCustomTab}
                   ></edgeless-color-custom-button>
                 </edgeless-color-panel>
@@ -141,6 +166,9 @@ export class EdgelessColorPickerButton extends WithDisposable(LitElement) {
 
   @property()
   accessor color!: string;
+
+  @property()
+  accessor colorPanelClass: string | undefined = undefined;
 
   @property({ attribute: false })
   accessor colors: { type: ModeType; value: string }[] = [];
