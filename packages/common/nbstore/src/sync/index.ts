@@ -10,6 +10,8 @@ import { AwarenessSyncImpl } from './awareness';
 import { BlobSyncImpl } from './blob';
 import { DocSyncImpl, type DocSyncState } from './doc';
 
+export type { DocSyncDocState, DocSyncState } from './doc';
+
 export interface SyncState {
   doc?: DocSyncState;
 }

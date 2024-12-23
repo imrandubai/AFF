@@ -50,11 +50,13 @@ interface PeerState {
   total: number;
   syncing: number;
   retrying: boolean;
+  synced: boolean;
   errorMessage: string | null;
 }
 
 interface PeerDocState {
   syncing: boolean;
+  synced: boolean;
   retrying: boolean;
   errorMessage: string | null;
 }
@@ -121,6 +123,7 @@ export class DocSyncPeer {
         subscribe.next({
           total: this.status.docs.size,
           syncing: this.status.docs.size,
+          synced: false,
           retrying: this.status.retrying,
           errorMessage: this.status.errorMessage,
         });
@@ -131,6 +134,7 @@ export class DocSyncPeer {
           syncing: syncing,
           retrying: this.status.retrying,
           errorMessage: this.status.errorMessage,
+          synced: syncing === 0,
         });
       }
     };
@@ -143,10 +147,12 @@ export class DocSyncPeer {
   docState$(docId: string) {
     return new Observable<PeerDocState>(subscribe => {
       const next = () => {
+        const syncing =
+          !this.status.connectedDocs.has(docId) ||
+          this.status.jobMap.has(docId);
         subscribe.next({
-          syncing:
-            !this.status.connectedDocs.has(docId) ||
-            this.status.jobMap.has(docId),
+          syncing: syncing,
+          synced: !syncing,
           retrying: this.status.retrying,
           errorMessage: this.status.errorMessage,
         });

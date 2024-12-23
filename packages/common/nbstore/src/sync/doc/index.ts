@@ -7,6 +7,7 @@ import { DocSyncPeer } from './peer';
 export interface DocSyncState {
   total: number;
   syncing: number;
+  synced: boolean;
   retrying: boolean;
   errorMessage: string | null;
 }
@@ -33,8 +34,9 @@ export class DocSyncImpl implements DocSync {
     this.peers.map(peer => peer.peerState$)
   ).pipe(
     map(allPeers => ({
-      total: allPeers.reduce((acc, peer) => acc + peer.total, 0),
-      syncing: allPeers.reduce((acc, peer) => acc + peer.syncing, 0),
+      total: allPeers.reduce((acc, peer) => Math.max(acc, peer.total), 0),
+      syncing: allPeers.reduce((acc, peer) => Math.max(acc, peer.syncing), 0),
+      synced: allPeers.every(peer => peer.synced),
       retrying: allPeers.some(peer => peer.retrying),
       errorMessage:
         allPeers.find(peer => peer.errorMessage)?.errorMessage ?? null,

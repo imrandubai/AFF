@@ -11,15 +11,14 @@ import type {
 import type { AwarenessRecord } from '../storage/awareness';
 import type { DocSyncDocState, DocSyncState } from '../sync/doc';
 
+export interface WorkerInitOptions {
+  local: { name: string; opts: StorageOptions }[];
+  remotes: { name: string; opts: StorageOptions }[][];
+}
+
 interface GroupedWorkerOps {
   worker: {
-    init: [
-      {
-        local: { name: string; opts: StorageOptions }[];
-        remotes: { name: string; opts: StorageOptions }[][];
-      },
-      void,
-    ];
+    init: [WorkerInitOptions, void];
     destroy: [void, void];
   };
 

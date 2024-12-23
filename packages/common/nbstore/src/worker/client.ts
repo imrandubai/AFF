@@ -1,7 +1,7 @@
 import type { OpClient } from '@toeverything/infra/op';
 
 import { DummyConnection } from '../connection';
-import { DocFrontend } from '../frontend/doc';
+import { AwarenessFrontend, BlobFrontend, DocFrontend } from '../frontend';
 import {
   type AwarenessRecord,
   type AwarenessStorage,
@@ -19,23 +19,26 @@ import type { BlobSync } from '../sync/blob';
 import type { DocSync } from '../sync/doc';
 import type { WorkerOps } from './ops';
 
+export type { WorkerInitOptions } from './ops';
+
 export class WorkerClient {
   constructor(
     private readonly client: OpClient<WorkerOps>,
     private readonly options: StorageOptions
   ) {}
 
-  readonly docStorage = new WorkerDocStorage(this.client, this.options);
-  readonly blobStorage = new WorkerBlobStorage(this.client, this.options);
-  readonly awarenessStorage = new WorkerAwarenessStorage(
+  private readonly docStorage = new WorkerDocStorage(this.client, this.options);
+  private readonly blobStorage = new WorkerBlobStorage(
     this.client,
     this.options
   );
-  readonly docSync = new WorkerDocSync(this.client);
-  readonly blobSync = new WorkerBlobSync(this.client);
-  readonly awarenessSync = new WorkerAwarenessSync(this.client);
+  private readonly docSync = new WorkerDocSync(this.client);
+  private readonly blobSync = new WorkerBlobSync(this.client);
+  private readonly awarenessSync = new WorkerAwarenessSync(this.client);
 
   readonly docFrontend = new DocFrontend(this.docStorage, this.docSync);
+  readonly blobFrontend = new BlobFrontend(this.blobStorage, this.blobSync);
+  readonly awarenessFrontend = new AwarenessFrontend(this.awarenessSync);
 }
 
 class WorkerDocStorage implements DocStorage {
@@ -153,63 +156,6 @@ class WorkerBlobStorage implements BlobStorage {
     return this.client.call('blobStorage.listBlobs');
   }
 
-  connection = new DummyConnection();
-}
-
-class WorkerAwarenessStorage implements AwarenessStorage {
-  constructor(
-    private readonly client: OpClient<WorkerOps>,
-    private readonly options: StorageOptions
-  ) {}
-
-  readonly storageType = 'awareness';
-  readonly peer = this.options.peer;
-  readonly spaceType = this.options.type;
-  readonly spaceId = this.options.id;
-  readonly universalId = universalId(this.options);
-
-  update(record: AwarenessRecord, origin?: string): Promise<void> {
-    return this.client.call('awarenessStorage.update', {
-      awareness: record,
-      origin,
-    });
-  }
-  subscribeUpdate(
-    id: string,
-    onUpdate: (update: AwarenessRecord, origin?: string) => void,
-    onCollect: () => Promise<AwarenessRecord | null>
-  ): () => void {
-    const subscription = this.client
-      .ob$('awarenessStorage.subscribeUpdate', id)
-      .subscribe({
-        next: update => {
-          if (update.type === 'awareness-update') {
-            onUpdate(update.awareness, update.origin);
-          }
-          if (update.type === 'awareness-collect') {
-            onCollect()
-              .then(record => {
-                if (record) {
-                  this.client
-                    .call('awarenessStorage.collect', {
-                      awareness: record,
-                      collectId: update.collectId,
-                    })
-                    .catch(err => {
-                      console.error('error feedback collected awareness', err);
-                    });
-                }
-              })
-              .catch(err => {
-                console.error('error collecting awareness', err);
-              });
-          }
-        },
-      });
-    return () => {
-      subscription.unsubscribe();
-    };
-  }
   connection = new DummyConnection();
 }
 
