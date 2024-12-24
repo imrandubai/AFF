@@ -7,7 +7,7 @@ import type { WorkspaceEngineWorkerProvider } from '../providers/worker';
 import type { WorkspaceService } from '../services/workspace';
 
 export class WorkspaceEngine extends Entity<{
-  workspaceFlavourProvider: WorkspaceFlavourProvider;
+  flavoursProvider: WorkspaceFlavourProvider;
 }> {
   worker?: WorkerClient;
 
@@ -43,7 +43,7 @@ export class WorkspaceEngine extends Entity<{
     this.eventBus.emit(WorkspaceEngineBeforeStart, this);
 
     const { client, dispose } = this.workerProvider.openWorker(
-      this.props.workspaceFlavourProvider.getEngineWorkerInitOptions(
+      this.props.flavoursProvider.getEngineWorkerInitOptions(
         this.workspaceService.workspace.id
       )
     );

@@ -2,10 +2,10 @@ import type { OpConsumer } from '@toeverything/infra/op';
 import { Observable } from 'rxjs';
 
 import { getAvailableStorageImplementations } from '../impls';
-import { SpaceStorage, type StorageOptions } from '../storage';
+import { SpaceStorage } from '../storage';
 import type { AwarenessRecord } from '../storage/awareness';
 import { Sync } from '../sync';
-import type { WorkerOps } from './ops';
+import type { WorkerInitOptions, WorkerOps } from './ops';
 
 export class WorkerConsumer {
   private remotes: SpaceStorage[] = [];
@@ -73,21 +73,18 @@ export class WorkerConsumer {
     this.consumer.listen();
   }
 
-  async init(init: {
-    local: { name: string; opts: StorageOptions }[];
-    remotes: { name: string; opts: StorageOptions }[][];
-  }) {
+  async init(init: WorkerInitOptions) {
     this.local = new SpaceStorage(
       init.local.map(opt => {
         const Storage = getAvailableStorageImplementations(opt.name);
-        return new Storage(opt.opts);
+        return new Storage(opt.opts as any);
       })
     );
     this.remotes = init.remotes.map(opts => {
       return new SpaceStorage(
         opts.map(opt => {
           const Storage = getAvailableStorageImplementations(opt.name);
-          return new Storage(opt.opts);
+          return new Storage(opt.opts as any);
         })
       );
     });

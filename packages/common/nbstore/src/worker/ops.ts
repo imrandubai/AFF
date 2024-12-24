@@ -1,3 +1,4 @@
+import type { AvailableStorageImplementations } from '../impls';
 import type {
   BlobRecord,
   DocClock,
@@ -6,14 +7,20 @@ import type {
   DocRecord,
   DocUpdate,
   ListedBlobRecord,
-  StorageOptions,
 } from '../storage';
 import type { AwarenessRecord } from '../storage/awareness';
 import type { DocSyncDocState, DocSyncState } from '../sync/doc';
 
+type StorageInitOptions = Values<{
+  [key in keyof AvailableStorageImplementations]: {
+    name: key;
+    opts: ConstructorParameters<AvailableStorageImplementations[key]>[0];
+  };
+}>;
+
 export interface WorkerInitOptions {
-  local: { name: string; opts: StorageOptions }[];
-  remotes: { name: string; opts: StorageOptions }[][];
+  local: StorageInitOptions[];
+  remotes: StorageInitOptions[][];
 }
 
 interface GroupedWorkerOps {

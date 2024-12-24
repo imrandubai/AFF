@@ -1,11 +1,7 @@
+import type { BlobStorage, DocStorage } from '@affine/nbstore';
 import type { WorkerInitOptions } from '@affine/nbstore/worker/client';
 import type { DocCollection } from '@blocksuite/affine/store';
-import {
-  type BlobStorage,
-  createIdentifier,
-  type DocStorage,
-  type LiveData,
-} from '@toeverything/infra';
+import { createIdentifier, type LiveData } from '@toeverything/infra';
 
 import type { WorkspaceProfileInfo } from '../entities/profile';
 import type { Workspace } from '../entities/workspace';

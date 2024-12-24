@@ -16,6 +16,8 @@ interface ChannelMessage {
 }
 
 export class IndexedDBDocStorage extends DocStorageBase {
+  static readonly identifier = 'IndexedDBDocStorage';
+
   readonly connection = new IDBConnection(this.options);
 
   get db() {

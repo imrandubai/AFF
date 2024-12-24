@@ -25,6 +25,8 @@ interface CloudDocStorageOptions extends DocStorageOptions {
 }
 
 export class CloudDocStorage extends DocStorageBase<CloudDocStorageOptions> {
+  static readonly identifier = 'CloudDocStorage';
+
   get socket() {
     return this.connection.inner;
   }

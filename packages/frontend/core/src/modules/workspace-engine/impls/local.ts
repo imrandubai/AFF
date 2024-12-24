@@ -1,10 +1,8 @@
 import { DebugLogger } from '@affine/debug';
+import type { BlobStorage, DocStorage } from '@affine/nbstore';
+import type { WorkerInitOptions } from '@affine/nbstore/worker/client';
 import { DocCollection } from '@blocksuite/affine/store';
-import type {
-  BlobStorage,
-  DocStorage,
-  FrameworkProvider,
-} from '@toeverything/infra';
+import type { FrameworkProvider } from '@toeverything/infra';
 import { LiveData, Service } from '@toeverything/infra';
 import { isEqual } from 'lodash-es';
 import { nanoid } from 'nanoid';
@@ -14,7 +12,6 @@ import { encodeStateAsUpdate } from 'yjs';
 import { DesktopApiService } from '../../desktop-api';
 import {
   getAFFiNEWorkspaceSchema,
-  type WorkspaceEngineProvider,
   type WorkspaceFlavourProvider,
   type WorkspaceFlavoursProvider,
   type WorkspaceMetadata,
@@ -179,23 +176,43 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
     return this.storageProvider.getBlobStorage(id).get(blob);
   }
 
-  getEngineProvider(workspaceId: string): WorkspaceEngineProvider {
+  getEngineWorkerInitOptions(workspaceId: string): WorkerInitOptions {
     return {
-      getAwarenessConnections() {
-        return [new BroadcastChannelAwarenessConnection(workspaceId)];
-      },
-      getDocServer() {
-        return null;
-      },
-      getDocStorage: () => {
-        return this.storageProvider.getDocStorage(workspaceId);
-      },
-      getLocalBlobStorage: () => {
-        return this.storageProvider.getBlobStorage(workspaceId);
-      },
-      getRemoteBlobStorages() {
-        return [new StaticBlobStorage()];
-      },
+      local: [
+        {
+          name: 'IndexedDBDocStorage',
+          opts: {
+            peer: 'local',
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+        {
+          name: 'IndexedDBBlobStorage',
+          opts: {
+            peer: 'local',
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+        {
+          name: 'IndexedDBSyncStorage',
+          opts: {
+            peer: 'local',
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+        {
+          name: 'BroadcastChannelAwarenessStorage',
+          opts: {
+            peer: 'local',
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+      ],
+      remotes: [],
     };
   }
 }

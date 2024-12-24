@@ -12,36 +12,47 @@ import {
 } from './idb';
 import { IndexedDBV1BlobStorage, IndexedDBV1DocStorage } from './idb/v1';
 
-type StorageConstructor = new (...args: any[]) => Storage;
+type StorageConstructor = {
+  new (...args: any[]): Storage;
+  identifier: string;
+};
 
-const idb: StorageConstructor[] = [
+const idb = [
   IndexedDBDocStorage,
   IndexedDBBlobStorage,
   IndexedDBSyncStorage,
   BroadcastChannelAwarenessStorage,
-];
+] satisfies StorageConstructor[];
 
-const idbv1: StorageConstructor[] = [
+const idbv1 = [
   IndexedDBV1DocStorage,
   IndexedDBV1BlobStorage,
-];
+] satisfies StorageConstructor[];
 
-const cloud: StorageConstructor[] = [
+const cloud = [
   CloudDocStorage,
   CloudBlobStorage,
   CloudAwarenessStorage,
-];
+] satisfies StorageConstructor[];
 
-export const storages: StorageConstructor[] = cloud.concat(idbv1, idb);
+const storages = [...cloud, ...idbv1, ...idb] satisfies StorageConstructor[];
 
-const AvailableStorageImplementations = storages.reduce(
-  (acc, curr) => {
-    acc[curr.name] = curr;
-    return acc;
-  },
-  {} as Record<string, StorageConstructor>
-);
+const AvailableStorageImplementations = storages.reduce((acc, curr) => {
+  acc[curr.name] = curr;
+  return acc;
+}, {} as any) as {
+  [key in (typeof storages)[number]['identifier']]: (typeof storages)[number] & {
+    identifier: key;
+  };
+};
 
-export const getAvailableStorageImplementations = (name: string) => {
+export type AvailableStorageImplementations =
+  typeof AvailableStorageImplementations;
+
+export const getAvailableStorageImplementations = <
+  T extends keyof AvailableStorageImplementations,
+>(
+  name: T
+): AvailableStorageImplementations[T] => {
   return AvailableStorageImplementations[name];
 };

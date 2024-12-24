@@ -10,6 +10,8 @@ import { DocIDBConnection } from './db';
  * @deprecated readonly
  */
 export class IndexedDBV1DocStorage extends DocStorageBase {
+  static readonly identifier = 'IndexedDBV1DocStorage';
+
   readonly connection = share(new DocIDBConnection());
 
   get db() {

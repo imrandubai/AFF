@@ -4,7 +4,6 @@ import { DummyConnection } from '../connection';
 import { AwarenessFrontend, BlobFrontend, DocFrontend } from '../frontend';
 import {
   type AwarenessRecord,
-  type AwarenessStorage,
   type BlobRecord,
   type BlobStorage,
   type DocRecord,

@@ -18,6 +18,8 @@ interface CloudBlobStorageOptions extends BlobStorageOptions {
 }
 
 export class CloudBlobStorage extends BlobStorageBase<CloudBlobStorageOptions> {
+  static readonly identifier = 'CloudBlobStorage';
+
   private readonly gql = gqlFetcherFactory(
     this.options.apiBaseUrl + '/graphql'
   );

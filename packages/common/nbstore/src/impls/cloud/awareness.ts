@@ -17,6 +17,8 @@ interface CloudAwarenessStorageOptions extends AwarenessStorageOptions {
 }
 
 export class CloudAwarenessStorage extends AwarenessStorageBase<CloudAwarenessStorageOptions> {
+  static readonly identifier = 'CloudAwarenessStorage';
+
   connection = share(
     new SocketConnection(this.peer, this.options.socketOptions)
   );

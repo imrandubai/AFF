@@ -116,7 +116,7 @@ export class DocFrontend {
   private readonly abort = new AbortController();
 
   constructor(
-    private readonly storage: DocStorage,
+    public readonly storage: DocStorage,
     private readonly sync: DocSync | null,
     readonly options: DocFrontendOptions = {}
   ) {}

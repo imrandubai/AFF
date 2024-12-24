@@ -7,6 +7,8 @@ import {
 import { IDBConnection } from './db';
 
 export class IndexedDBBlobStorage extends BlobStorageBase {
+  static readonly identifier = 'IndexedDBBlobStorage';
+
   readonly connection = share(new IDBConnection(this.options));
 
   get db() {

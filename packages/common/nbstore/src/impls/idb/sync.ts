@@ -2,6 +2,8 @@ import { share } from '../../connection';
 import { BasicSyncStorage, type DocClock, type DocClocks } from '../../storage';
 import { IDBConnection } from './db';
 export class IndexedDBSyncStorage extends BasicSyncStorage {
+  static readonly identifier = 'IndexedDBSyncStorage';
+
   readonly connection = share(new IDBConnection(this.options));
 
   get db() {

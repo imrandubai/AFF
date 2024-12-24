@@ -23,6 +23,8 @@ type ChannelMessage =
     };
 
 export class BroadcastChannelAwarenessStorage extends AwarenessStorageBase {
+  static readonly identifier = 'BroadcastChannelAwarenessStorage';
+
   override readonly storageType = 'awareness';
   override readonly connection = new BroadcastChannelConnection(this.options);
   get channel() {

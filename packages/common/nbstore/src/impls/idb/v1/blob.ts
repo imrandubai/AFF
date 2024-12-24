@@ -6,6 +6,8 @@ import { BlobIDBConnection } from './db';
  * @deprecated readonly
  */
 export class IndexedDBV1BlobStorage extends BlobStorageBase {
+  static readonly identifier = 'IndexedDBV1BlobStorage';
+
   readonly connection = share(new BlobIDBConnection(this.spaceId));
 
   get db() {

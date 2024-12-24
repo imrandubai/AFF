@@ -3,8 +3,8 @@ import type { BlobSync } from '../sync/blob';
 
 export class BlobFrontend {
   constructor(
-    readonly storage: BlobStorage,
-    readonly sync?: BlobSync
+    public readonly storage: BlobStorage,
+    private readonly sync?: BlobSync
   ) {}
 
   get(blobId: string) {
