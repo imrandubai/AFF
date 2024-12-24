@@ -35,15 +35,38 @@ export function createChatSession({
   client,
   workspaceId,
   docId,
+  promptName,
 }: {
   client: CopilotClient;
   workspaceId: string;
   docId: string;
+  promptName: string;
 }) {
   return client.createSession({
     workspaceId,
     docId,
-    promptName: 'Chat With AFFiNE AI',
+    promptName,
+  });
+}
+
+export function updateChatSession({
+  client,
+  workspaceId,
+  docId,
+  sessionId,
+  promptName,
+}: {
+  client: CopilotClient;
+  workspaceId: string;
+  docId: string;
+  sessionId: string;
+  promptName: string;
+}) {
+  return client.updateSession({
+    sessionId,
+    workspaceId,
+    docId,
+    promptName,
   });
 }
 

@@ -1,6 +1,6 @@
 import {
-  AIEdgelessRootBlockSpec,
-  AIPageRootBlockSpec,
+  createAIEdgelessRootBlockSpec,
+  createAIPageRootBlockSpec,
 } from '@affine/core/blocksuite/presets/ai';
 import { DocService, DocsService } from '@affine/core/modules/doc';
 import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
@@ -264,7 +264,7 @@ export function createPageRootBlockSpec(
   const featureFlagService = framework.get(FeatureFlagService);
   const enableAI = featureFlagService.flags.enable_ai.value;
   return [
-    enableAI ? AIPageRootBlockSpec : PageRootBlockSpec,
+    enableAI ? createAIPageRootBlockSpec(framework) : PageRootBlockSpec,
     FontLoaderService,
     getThemeExtension(framework),
     getFontConfigExtension(),
@@ -280,7 +280,7 @@ export function createEdgelessRootBlockSpec(
   const featureFlagService = framework.get(FeatureFlagService);
   const enableAI = featureFlagService.flags.enable_ai.value;
   return [
-    enableAI ? AIEdgelessRootBlockSpec : EdgelessRootBlockSpec,
+    enableAI ? createAIEdgelessRootBlockSpec(framework) : EdgelessRootBlockSpec,
     FontLoaderService,
     getThemeExtension(framework),
     EdgelessToolExtension,

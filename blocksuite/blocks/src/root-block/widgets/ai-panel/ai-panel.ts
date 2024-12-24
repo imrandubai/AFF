@@ -62,7 +62,7 @@ export class AffineAIPanelWidget extends WidgetComponent {
       box-sizing: border-box;
       width: 100%;
       height: fit-content;
-      padding: 8px 0;
+      padding: 10px 0;
     }
 
     .ai-panel-container:not(:has(ai-panel-generating)) {
@@ -473,6 +473,7 @@ export class AffineAIPanelWidget extends WidgetComponent {
             .onBlur=${this.discard}
             .onFinish=${this._inputFinish}
             .onInput=${this.onInput}
+            .networkSearchConfig=${config.networkSearchConfig}
           ></ai-panel-input>`,
       ],
       [

@@ -63,6 +63,23 @@ class CreateChatSessionInput {
 }
 
 @InputType()
+class UpdateChatSessionInput {
+  @Field(() => String)
+  sessionId!: string;
+
+  @Field(() => String)
+  workspaceId!: string;
+
+  @Field(() => String)
+  docId!: string;
+
+  @Field(() => String, {
+    description: 'The prompt name to use for the session',
+  })
+  promptName!: string;
+}
+
+@InputType()
 class ForkChatSessionInput {
   @Field(() => String)
   workspaceId!: string;
@@ -367,6 +384,33 @@ export class CopilotResolver {
     await this.chatSession.checkQuota(user.id);
 
     return await this.chatSession.create({
+      ...options,
+      userId: user.id,
+    });
+  }
+
+  @Mutation(() => String, {
+    description: 'Update a chat session',
+  })
+  @CallMetric('ai', 'chat_session_update')
+  async updateCopilotSession(
+    @CurrentUser() user: CurrentUser,
+    @Args({ name: 'options', type: () => UpdateChatSessionInput })
+    options: UpdateChatSessionInput
+  ) {
+    await this.permissions.checkCloudPagePermission(
+      options.workspaceId,
+      options.docId,
+      user.id
+    );
+    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}:${options.workspaceId}`;
+    await using lock = await this.mutex.acquire(lockFlag);
+    if (!lock) {
+      return new TooManyRequest('Server is busy');
+    }
+
+    await this.chatSession.checkQuota(user.id);
+    return await this.chatSession.update({
       ...options,
       userId: user.id,
     });

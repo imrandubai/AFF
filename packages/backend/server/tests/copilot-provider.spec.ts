@@ -47,8 +47,10 @@ const test = ava as TestFn<Tester>;
 const isCopilotConfigured =
   !!process.env.COPILOT_OPENAI_API_KEY &&
   !!process.env.COPILOT_FAL_API_KEY &&
+  !!process.env.COPILOT_PERPLEXITY_API_KEY &&
   process.env.COPILOT_OPENAI_API_KEY !== '1' &&
-  process.env.COPILOT_FAL_API_KEY !== '1';
+  process.env.COPILOT_FAL_API_KEY !== '1' &&
+  process.env.COPILOT_PERPLEXITY_API_KEY !== '1';
 const runIfCopilotConfigured = test.macro(
   async (
     t,
@@ -74,6 +76,9 @@ test.serial.before(async t => {
             },
             fal: {
               apiKey: process.env.COPILOT_FAL_API_KEY,
+            },
+            perplexity: {
+              apiKey: process.env.COPILOT_PERPLEXITY_API_KEY,
             },
           },
         },
@@ -152,7 +157,7 @@ const checkMDList = (text: string) => {
       return false;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+     
     const currentIndent = line.match(/^( *)/)?.[0].length!;
     if (Number.isNaN(currentIndent) || currentIndent % 2 !== 0) {
       return false;

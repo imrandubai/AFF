@@ -23,6 +23,7 @@ import {
   ChatSessionForkOptions,
   ChatSessionOptions,
   ChatSessionState,
+  ChatSessionUpdateOptions,
   getTokenEncoder,
   ListHistoriesOptions,
   PromptMessage,
@@ -262,6 +263,12 @@ export class ChatSessionService {
             },
           });
         }
+        await tx.aiSession.update({
+          where: { id: sessionId },
+          data: {
+            promptName: state.prompt.name,
+          },
+        });
       } else {
         await tx.aiSession.create({
           data: {
@@ -567,6 +574,22 @@ export class ChatSessionService {
       messages: [],
       // when client create chat session, we always find root session
       parentSessionId: null,
+    });
+  }
+
+  async update(options: ChatSessionUpdateOptions): Promise<string> {
+    const prompt = await this.prompt.get(options.promptName);
+    if (!prompt) {
+      this.logger.error(`Prompt not found: ${options.promptName}`);
+      throw new CopilotPromptNotFound({ name: options.promptName });
+    }
+    const state = await this.getSession(options.sessionId);
+
+    return await this.setSession({
+      ...options,
+      prompt,
+      messages: [],
+      parentSessionId: state?.parentSessionId || null,
     });
   }
 
