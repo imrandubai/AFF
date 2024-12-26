@@ -13,6 +13,7 @@ export interface DocSyncState {
 }
 
 export interface DocSyncDocState {
+  synced: boolean;
   syncing: boolean;
   retrying: boolean;
   errorMessage: string | null;
@@ -56,6 +57,7 @@ export class DocSyncImpl implements DocSync {
           allPeers.find(peer => peer.errorMessage)?.errorMessage ?? null,
         retrying: allPeers.some(peer => peer.retrying),
         syncing: allPeers.some(peer => peer.syncing),
+        synced: allPeers.every(peer => peer.synced),
       }))
     );
   }

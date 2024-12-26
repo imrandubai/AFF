@@ -13,14 +13,18 @@ import {
 } from './socket';
 
 interface CloudAwarenessStorageOptions extends AwarenessStorageOptions {
-  socketOptions: SocketOptions;
+  socketOptions?: SocketOptions;
+  serverBaseUrl: string;
 }
 
 export class CloudAwarenessStorage extends AwarenessStorageBase<CloudAwarenessStorageOptions> {
   static readonly identifier = 'CloudAwarenessStorage';
 
   connection = share(
-    new SocketConnection(this.peer, this.options.socketOptions)
+    new SocketConnection(
+      `${this.options.serverBaseUrl}/`,
+      this.options.socketOptions
+    )
   );
 
   private get socket() {

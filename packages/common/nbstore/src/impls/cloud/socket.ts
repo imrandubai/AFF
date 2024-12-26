@@ -162,7 +162,7 @@ export class SocketConnection extends AutoReconnectConnection<Socket> {
 
   constructor(
     private readonly endpoint: string,
-    private readonly socketOptions: SocketOptions
+    private readonly socketOptions?: SocketOptions
   ) {
     super();
   }

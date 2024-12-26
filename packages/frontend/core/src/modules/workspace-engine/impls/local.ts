@@ -1,5 +1,6 @@
 import { DebugLogger } from '@affine/debug';
 import type { BlobStorage, DocStorage } from '@affine/nbstore';
+import { IndexedDBBlobStorage, IndexedDBDocStorage } from '@affine/nbstore/idb';
 import type { WorkerInitOptions } from '@affine/nbstore/worker/client';
 import { DocCollection } from '@blocksuite/affine/store';
 import type { FrameworkProvider } from '@toeverything/infra';
@@ -18,8 +19,6 @@ import {
   type WorkspaceProfileInfo,
 } from '../../workspace';
 import type { WorkspaceEngineStorageProvider } from '../providers/engine';
-import { BroadcastChannelAwarenessConnection } from './engine/awareness-broadcast-channel';
-import { StaticBlobStorage } from './engine/blob-static';
 import { getWorkspaceProfileWorker } from './out-worker';
 
 export const LOCAL_WORKSPACE_LOCAL_STORAGE_KEY = 'affine-local-workspace';
@@ -53,11 +52,9 @@ export function setLocalWorkspaceIds(
 }
 
 class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
-  constructor(
-    private readonly storageProvider: WorkspaceEngineStorageProvider,
-    private readonly framework: FrameworkProvider
-  ) {}
+  constructor(private readonly framework: FrameworkProvider) {}
 
+  peerId = 'local';
   flavour = 'local';
   notifyChannel = new BroadcastChannel(
     LOCAL_WORKSPACE_CHANGED_BROADCAST_CHANNEL_KEY
@@ -84,14 +81,47 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
     const id = nanoid();
 
     // save the initial state to local storage, then sync to cloud
-    const blobStorage = this.storageProvider.getBlobStorage(id);
-    const docStorage = this.storageProvider.getDocStorage(id);
+    const docStorage = new IndexedDBDocStorage({
+      id: id,
+      peer: this.peerId,
+      type: 'workspace',
+    });
+    const blobStorage = new IndexedDBBlobStorage({
+      id: id,
+      peer: this.peerId,
+      type: 'workspace',
+    });
 
     const docCollection = new DocCollection({
       id: id,
       idGenerator: () => nanoid(),
       schema: getAFFiNEWorkspaceSchema(),
-      blobSources: { main: blobStorage },
+      blobSources: {
+        main: {
+          get: async key => {
+            const record = await blobStorage.get(key);
+            return record
+              ? new Blob([record.data], { type: record.mime })
+              : null;
+          },
+          delete: async () => {
+            return;
+          },
+          list: async () => {
+            return [];
+          },
+          set: async (id, blob) => {
+            await blobStorage.set({
+              key: id,
+              data: new Uint8Array(await blob.arrayBuffer()),
+              mime: blob.type,
+            });
+            return id;
+          },
+          name: 'blob',
+          readonly: false,
+        },
+      },
     });
 
     try {
@@ -99,9 +129,15 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
       await initial(docCollection, blobStorage, docStorage);
 
       // save workspace to local storage, should be vary fast
-      await docStorage.doc.set(id, encodeStateAsUpdate(docCollection.doc));
+      await docStorage.pushDocUpdate({
+        docId: id,
+        bin: encodeStateAsUpdate(docCollection.doc),
+      });
       for (const subdocs of docCollection.doc.getSubdocs()) {
-        await docStorage.doc.set(subdocs.guid, encodeStateAsUpdate(subdocs));
+        await docStorage.pushDocUpdate({
+          docId: subdocs.guid,
+          bin: encodeStateAsUpdate(subdocs),
+        });
       }
 
       // save workspace id to local storage
@@ -150,8 +186,12 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
   async getWorkspaceProfile(
     id: string
   ): Promise<WorkspaceProfileInfo | undefined> {
-    const docStorage = this.storageProvider.getDocStorage(id);
-    const localData = await docStorage.doc.get(id);
+    const docStorage = new IndexedDBDocStorage({
+      id: id,
+      peer: this.peerId,
+      type: 'workspace',
+    });
+    const localData = await docStorage.getDoc(id);
 
     if (!localData) {
       return {
@@ -163,7 +203,7 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
 
     const result = await client.call(
       'renderWorkspaceProfile',
-      [localData].filter(Boolean) as Uint8Array[]
+      [localData.bin].filter(Boolean) as Uint8Array[]
     );
 
     return {
@@ -172,8 +212,14 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
       isOwner: true,
     };
   }
-  getWorkspaceBlob(id: string, blob: string): Promise<Blob | null> {
-    return this.storageProvider.getBlobStorage(id).get(blob);
+
+  async getWorkspaceBlob(id: string, blobKey: string): Promise<Blob | null> {
+    const blob = await new IndexedDBBlobStorage({
+      id: id,
+      peer: this.peerId,
+      type: 'workspace',
+    }).get(blobKey);
+    return blob ? new Blob([blob.data], { type: blob.mime }) : null;
   }
 
   getEngineWorkerInitOptions(workspaceId: string): WorkerInitOptions {
@@ -182,7 +228,7 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
         {
           name: 'IndexedDBDocStorage',
           opts: {
-            peer: 'local',
+            peer: this.peerId,
             type: 'workspace',
             id: workspaceId,
           },
@@ -190,7 +236,7 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
         {
           name: 'IndexedDBBlobStorage',
           opts: {
-            peer: 'local',
+            peer: this.peerId,
             type: 'workspace',
             id: workspaceId,
           },
@@ -198,7 +244,7 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
         {
           name: 'IndexedDBSyncStorage',
           opts: {
-            peer: 'local',
+            peer: this.peerId,
             type: 'workspace',
             id: workspaceId,
           },
@@ -206,7 +252,7 @@ class LocalWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
         {
           name: 'BroadcastChannelAwarenessStorage',
           opts: {
-            peer: 'local',
+            peer: this.peerId,
             type: 'workspace',
             id: workspaceId,
           },
@@ -221,13 +267,11 @@ export class LocalWorkspaceFlavoursProvider
   extends Service
   implements WorkspaceFlavoursProvider
 {
-  constructor(
-    private readonly storageProvider: WorkspaceEngineStorageProvider
-  ) {
+  constructor() {
     super();
   }
 
   workspaceFlavours$ = new LiveData<WorkspaceFlavourProvider[]>([
-    new LocalWorkspaceFlavourProvider(this.storageProvider, this.framework),
+    new LocalWorkspaceFlavourProvider(this.framework),
   ]);
 }

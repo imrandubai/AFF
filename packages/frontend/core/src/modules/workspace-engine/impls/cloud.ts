@@ -5,11 +5,13 @@ import {
   getWorkspaceInfoQuery,
   getWorkspacesQuery,
 } from '@affine/graphql';
+import type { BlobStorage, DocStorage } from '@affine/nbstore';
+import { CloudBlobStorage, StaticCloudDocStorage } from '@affine/nbstore/cloud';
+import { IndexedDBBlobStorage, IndexedDBDocStorage } from '@affine/nbstore/idb';
+import type { WorkerInitOptions } from '@affine/nbstore/worker/client';
 import { DocCollection } from '@blocksuite/affine/store';
 import {
-  type BlobStorage,
   catchErrorInto,
-  type DocStorage,
   effect,
   exhaustMapSwitchUntilChanged,
   fromPromise,
@@ -28,28 +30,18 @@ import type { Server, ServersService } from '../../cloud';
 import {
   AccountChanged,
   AuthService,
-  FetchService,
   GraphQLService,
-  WebSocketService,
   WorkspaceServerService,
 } from '../../cloud';
 import type { GlobalState } from '../../storage';
 import {
   getAFFiNEWorkspaceSchema,
   type Workspace,
-  type WorkspaceEngineProvider,
   type WorkspaceFlavourProvider,
   type WorkspaceFlavoursProvider,
   type WorkspaceMetadata,
   type WorkspaceProfileInfo,
 } from '../../workspace';
-import type { WorkspaceEngineStorageProvider } from '../providers/engine';
-import { BroadcastChannelAwarenessConnection } from './engine/awareness-broadcast-channel';
-import { CloudAwarenessConnection } from './engine/awareness-cloud';
-import { CloudBlobStorage } from './engine/blob-cloud';
-import { StaticBlobStorage } from './engine/blob-static';
-import { CloudDocEngineServer } from './engine/doc-cloud';
-import { CloudStaticDocStorage } from './engine/doc-cloud-static';
 import { getWorkspaceProfileWorker } from './out-worker';
 
 const getCloudWorkspaceCacheKey = (serverId: string) => {
@@ -63,20 +55,14 @@ const logger = new DebugLogger('affine:cloud-workspace-flavour-provider');
 
 class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
   private readonly authService: AuthService;
-  private readonly webSocketService: WebSocketService;
-  private readonly fetchService: FetchService;
   private readonly graphqlService: GraphQLService;
-
   private readonly unsubscribeAccountChanged: () => void;
 
   constructor(
     private readonly globalState: GlobalState,
-    private readonly storageProvider: WorkspaceEngineStorageProvider,
     private readonly server: Server
   ) {
     this.authService = server.scope.get(AuthService);
-    this.webSocketService = server.scope.get(WebSocketService);
-    this.fetchService = server.scope.get(FetchService);
     this.graphqlService = server.scope.get(GraphQLService);
     this.unsubscribeAccountChanged = this.server.scope.eventBus.on(
       AccountChanged,
@@ -86,7 +72,8 @@ class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
     );
   }
 
-  flavour = this.server.id;
+  readonly flavour = this.server.id;
+  private readonly peerId = this.flavour;
 
   async deleteWorkspace(id: string): Promise<void> {
     await this.graphqlService.gql({
@@ -114,15 +101,46 @@ class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
     });
 
     // save the initial state to local storage, then sync to cloud
-    const blobStorage = this.storageProvider.getBlobStorage(workspaceId);
-    const docStorage = this.storageProvider.getDocStorage(workspaceId);
+    const blobStorage = new IndexedDBBlobStorage({
+      id: workspaceId,
+      peer: this.peerId,
+      type: 'workspace',
+    });
+    const docStorage = new IndexedDBDocStorage({
+      id: workspaceId,
+      peer: this.peerId,
+      type: 'workspace',
+    });
 
     const docCollection = new DocCollection({
       id: workspaceId,
       idGenerator: () => nanoid(),
       schema: getAFFiNEWorkspaceSchema(),
       blobSources: {
-        main: blobStorage,
+        main: {
+          get: async key => {
+            const record = await blobStorage.get(key);
+            return record
+              ? new Blob([record.data], { type: record.mime })
+              : null;
+          },
+          delete: async () => {
+            return;
+          },
+          list: async () => {
+            return [];
+          },
+          set: async (id, blob) => {
+            await blobStorage.set({
+              key: id,
+              data: new Uint8Array(await blob.arrayBuffer()),
+              mime: blob.type,
+            });
+            return id;
+          },
+          name: 'blob',
+          readonly: false,
+        },
       },
     });
 
@@ -131,12 +149,15 @@ class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
       await initial(docCollection, blobStorage, docStorage);
 
       // save workspace to local storage, should be vary fast
-      await docStorage.doc.set(
-        workspaceId,
-        encodeStateAsUpdate(docCollection.doc)
-      );
+      await docStorage.pushDocUpdate({
+        docId: workspaceId,
+        bin: encodeStateAsUpdate(docCollection.doc),
+      });
       for (const subdocs of docCollection.doc.getSubdocs()) {
-        await docStorage.doc.set(subdocs.guid, encodeStateAsUpdate(subdocs));
+        await docStorage.pushDocUpdate({
+          docId: subdocs.guid,
+          bin: encodeStateAsUpdate(subdocs),
+        });
       }
 
       this.revalidate();
@@ -232,11 +253,20 @@ class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
     // get information from both cloud and local storage
 
     // we use affine 'static' storage here, which use http protocol, no need to websocket.
-    const cloudStorage = new CloudStaticDocStorage(id, this.fetchService);
-    const docStorage = this.storageProvider.getDocStorage(id);
+    const cloudStorage = new StaticCloudDocStorage({
+      id: id,
+      peer: this.peerId,
+      type: 'workspace',
+      serverBaseUrl: this.server.serverMetadata.baseUrl,
+    });
+    const docStorage = new IndexedDBDocStorage({
+      id: id,
+      peer: this.peerId,
+      type: 'workspace',
+    });
     // download root doc
-    const localData = await docStorage.doc.get(id);
-    const cloudData = (await cloudStorage.pull(id))?.data;
+    const localData = (await docStorage.getDoc(id))?.bin;
+    const cloudData = (await cloudStorage.getDoc(id))?.bin;
 
     const info = await this.getWorkspaceInfo(id, signal);
 
@@ -264,48 +294,26 @@ class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
     };
   }
   async getWorkspaceBlob(id: string, blob: string): Promise<Blob | null> {
-    const localBlob = await this.storageProvider.getBlobStorage(id).get(blob);
+    const localBlob = await new IndexedDBBlobStorage({
+      id,
+      peer: this.peerId,
+      type: 'workspace',
+    }).get(blob);
 
     if (localBlob) {
-      return localBlob;
+      return new Blob([localBlob.data], { type: localBlob.mime });
     }
 
-    const cloudBlob = new CloudBlobStorage(
+    const cloudBlob = await new CloudBlobStorage({
       id,
-      this.fetchService,
-      this.graphqlService
-    );
-    return await cloudBlob.get(blob);
-  }
-
-  getEngineProvider(workspaceId: string): WorkspaceEngineProvider {
-    return {
-      getAwarenessConnections: () => {
-        return [
-          new BroadcastChannelAwarenessConnection(workspaceId),
-          new CloudAwarenessConnection(workspaceId, this.webSocketService),
-        ];
-      },
-      getDocServer: () => {
-        return new CloudDocEngineServer(workspaceId, this.webSocketService);
-      },
-      getDocStorage: () => {
-        return this.storageProvider.getDocStorage(workspaceId);
-      },
-      getLocalBlobStorage: () => {
-        return this.storageProvider.getBlobStorage(workspaceId);
-      },
-      getRemoteBlobStorages: () => {
-        return [
-          new CloudBlobStorage(
-            workspaceId,
-            this.fetchService,
-            this.graphqlService
-          ),
-          new StaticBlobStorage(),
-        ];
-      },
-    };
+      peer: this.peerId,
+      type: 'workspace',
+      serverBaseUrl: this.server.serverMetadata.baseUrl,
+    }).get(blob);
+    if (!cloudBlob) {
+      return null;
+    }
+    return new Blob([cloudBlob.data], { type: cloudBlob.mime });
   }
 
   onWorkspaceInitialized(workspace: Workspace): void {
@@ -321,6 +329,76 @@ class CloudWorkspaceFlavourProvider implements WorkspaceFlavourProvider {
       },
       context: { signal },
     });
+  }
+
+  getEngineWorkerInitOptions(workspaceId: string): WorkerInitOptions {
+    return {
+      local: [
+        {
+          name: 'IndexedDBDocStorage',
+          opts: {
+            peer: this.peerId,
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+        {
+          name: 'IndexedDBBlobStorage',
+          opts: {
+            peer: this.peerId,
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+        {
+          name: 'IndexedDBSyncStorage',
+          opts: {
+            peer: this.peerId,
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+        {
+          name: 'BroadcastChannelAwarenessStorage',
+          opts: {
+            peer: this.peerId,
+            type: 'workspace',
+            id: workspaceId,
+          },
+        },
+      ],
+      remotes: [
+        [
+          {
+            name: 'CloudDocStorage',
+            opts: {
+              peer: this.peerId,
+              type: 'workspace',
+              id: workspaceId,
+              serverBaseUrl: this.server.serverMetadata.baseUrl,
+            },
+          },
+          {
+            name: 'CloudBlobStorage',
+            opts: {
+              peer: this.peerId,
+              type: 'workspace',
+              id: workspaceId,
+              serverBaseUrl: this.server.serverMetadata.baseUrl,
+            },
+          },
+          {
+            name: 'CloudAwarenessStorage',
+            opts: {
+              peer: this.peerId,
+              type: 'workspace',
+              id: workspaceId,
+              serverBaseUrl: this.server.serverMetadata.baseUrl,
+            },
+          },
+        ],
+      ],
+    };
   }
 
   private waitForLoaded() {
@@ -339,7 +417,6 @@ export class CloudWorkspaceFlavoursProvider
 {
   constructor(
     private readonly globalState: GlobalState,
-    private readonly storageProvider: WorkspaceEngineStorageProvider,
     private readonly serversService: ServersService
   ) {
     super();
@@ -355,7 +432,6 @@ export class CloudWorkspaceFlavoursProvider
           }
           const provider = new CloudWorkspaceFlavourProvider(
             this.globalState,
-            this.storageProvider,
             server
           );
           provider.revalidate();

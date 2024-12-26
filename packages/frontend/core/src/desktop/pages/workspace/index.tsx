@@ -16,6 +16,7 @@ import {
 import { ZipTransformer } from '@blocksuite/affine/blocks';
 import {
   FrameworkScope,
+  LiveData,
   useLiveData,
   useService,
   useServices,
@@ -28,6 +29,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
+import { map } from 'rxjs';
 
 import { AffineErrorBoundary } from '../../../components/affine/affine-error-boundary';
 import { WorkbenchRoot } from '../../../modules/workbench';
@@ -242,7 +244,16 @@ const WorkspacePage = ({ meta }: { meta: WorkspaceMetadata }) => {
   }, [meta, workspacesService]);
 
   const isRootDocReady =
-    useLiveData(workspace?.engine.rootDocState$.map(v => v.ready)) ?? false;
+    useLiveData(
+      workspace
+        ? LiveData.from(
+            workspace.engine.doc
+              .docState$(workspace.id)
+              .pipe(map(v => v.ready)),
+            false
+          )
+        : null
+    ) ?? false;
 
   useEffect(() => {
     if (workspace) {

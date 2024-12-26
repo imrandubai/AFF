@@ -8,7 +8,8 @@ export class WorkspaceEngineService extends Service {
   get engine() {
     if (!this._engine) {
       this._engine = this.framework.createEntity(WorkspaceEngine, {
-        flavoursProvider: this.workspaceScope.props.flavoursProvider,
+        engineWorkerInitOptions:
+          this.workspaceScope.props.engineWorkerInitOptions,
       });
     }
     return this._engine;

@@ -46,7 +46,7 @@ export const DesktopExportPanel = ({
         type: 'workspace',
       });
       if (isOnline) {
-        await workspace.engine.waitForDocSynced();
+        await workspace.engine.doc.waitForSynced();
         await workspace.engine.blob.sync();
       }
 

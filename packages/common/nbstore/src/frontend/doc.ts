@@ -61,6 +61,10 @@ export type DocFrontendDocState = {
    */
   syncing: boolean;
   /**
+   * the doc is synced with remote peers
+   */
+  synced: boolean;
+  /**
    * the doc is retrying to sync with remote peers
    */
   syncRetrying: boolean;
@@ -146,6 +150,7 @@ export class DocFrontend {
     return combineLatest([frontendState$, syncState$]).pipe(
       map(([frontend, sync]) => ({
         ...frontend,
+        synced: sync?.synced ?? false,
         syncing: sync?.syncing ?? false,
         syncRetrying: sync?.retrying ?? false,
         syncErrorMessage: sync?.errorMessage ?? null,
@@ -443,7 +448,53 @@ export class DocFrontend {
           }
         });
       }),
-      new Promise((_, reject) => {
+      new Promise<void>((_, reject) => {
+        if (abort?.aborted) {
+          reject(abort?.reason);
+        }
+        abort?.addEventListener('abort', () => {
+          reject(abort.reason);
+        });
+      }),
+    ]).finally(() => {
+      sub?.unsubscribe();
+    });
+  }
+
+  async waitForDocLoaded(docId: string, abort?: AbortSignal) {
+    let sub: Subscription | undefined = undefined;
+    return Promise.race([
+      new Promise<void>(resolve => {
+        sub = this.docState$(docId).subscribe(state => {
+          if (state.loaded) {
+            resolve();
+          }
+        });
+      }),
+      new Promise<void>((_, reject) => {
+        if (abort?.aborted) {
+          reject(abort?.reason);
+        }
+        abort?.addEventListener('abort', () => {
+          reject(abort.reason);
+        });
+      }),
+    ]).finally(() => {
+      sub?.unsubscribe();
+    });
+  }
+
+  async waitForDocSynced(docId: string, abort?: AbortSignal) {
+    let sub: Subscription | undefined = undefined;
+    return Promise.race([
+      new Promise<void>(resolve => {
+        sub = this.docState$(docId).subscribe(state => {
+          if (state.syncing) {
+            resolve();
+          }
+        });
+      }),
+      new Promise<void>((_, reject) => {
         if (abort?.aborted) {
           reject(abort?.reason);
         }
@@ -466,7 +517,7 @@ export class DocFrontend {
           }
         });
       }),
-      new Promise((_, reject) => {
+      new Promise<void>((_, reject) => {
         if (abort?.aborted) {
           reject(abort?.reason);
         }

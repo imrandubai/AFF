@@ -20,7 +20,7 @@ import {
 } from './socket';
 
 interface CloudDocStorageOptions extends DocStorageOptions {
-  socketOptions: SocketOptions;
+  socketOptions?: SocketOptions;
   serverBaseUrl: string;
 }
 

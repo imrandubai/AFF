@@ -1,15 +1,18 @@
-import type { WorkerClient } from '@affine/nbstore/worker/client';
+import type {
+  WorkerClient,
+  WorkerInitOptions,
+} from '@affine/nbstore/worker/client';
 import { Entity } from '@toeverything/infra';
 
 import { WorkspaceEngineBeforeStart } from '../events';
-import type { WorkspaceFlavourProvider } from '../providers/flavour';
 import type { WorkspaceEngineWorkerProvider } from '../providers/worker';
 import type { WorkspaceService } from '../services/workspace';
 
 export class WorkspaceEngine extends Entity<{
-  flavoursProvider: WorkspaceFlavourProvider;
+  engineWorkerInitOptions: WorkerInitOptions;
 }> {
   worker?: WorkerClient;
+  started = false;
 
   constructor(
     private readonly workspaceService: WorkspaceService,
@@ -40,12 +43,14 @@ export class WorkspaceEngine extends Entity<{
   }
 
   start() {
+    if (this.started) {
+      throw new Error('Engine is already started');
+    }
+    this.started = true;
     this.eventBus.emit(WorkspaceEngineBeforeStart, this);
 
     const { client, dispose } = this.workerProvider.openWorker(
-      this.props.flavoursProvider.getEngineWorkerInitOptions(
-        this.workspaceService.workspace.id
-      )
+      this.props.engineWorkerInitOptions
     );
     this.worker = client;
     this.disposables.push(dispose);
@@ -63,12 +68,4 @@ export class WorkspaceEngine extends Entity<{
   }
 
   rootDocState$ = this.doc.docState$(this.workspaceService.workspace.id);
-
-  waitForDocSynced() {
-    return this.doc.waitForSynced();
-  }
-
-  waitForRootDocReady() {
-    return this.doc.waitForDocReady(this.workspaceService.workspace.id);
-  }
 }

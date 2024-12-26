@@ -17,13 +17,19 @@ import type {
   WorkspaceMetadata,
 } from '@affine/core/modules/workspace';
 import { WorkspacesService } from '@affine/core/modules/workspace';
-import { FrameworkScope, useLiveData, useServices } from '@toeverything/infra';
+import {
+  FrameworkScope,
+  LiveData,
+  useLiveData,
+  useServices,
+} from '@toeverything/infra';
 import {
   type PropsWithChildren,
   useEffect,
   useLayoutEffect,
   useState,
 } from 'react';
+import { map } from 'rxjs';
 
 import { AppFallback } from '../../components/app-fallback';
 import { WorkspaceDialogs } from '../../dialogs';
@@ -106,7 +112,16 @@ export const WorkspaceLayout = ({
   ]);
 
   const isRootDocReady =
-    useLiveData(workspace?.engine.rootDocState$.map(v => v.ready)) ?? false;
+    useLiveData(
+      workspace
+        ? LiveData.from(
+            workspace.engine.doc
+              .docState$(workspace.id)
+              .pipe(map(v => v.ready)),
+            false
+          )
+        : null
+    ) ?? false;
 
   if (!workspace) {
     return null; // skip this, workspace will be set in layout effect
