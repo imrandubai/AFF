@@ -21,6 +21,26 @@ async function clickPeekViewControl(page: Page, n = 0) {
   await page.waitForTimeout(500);
 }
 
+async function enablePDFEmbedView(page: Page) {
+  // Opens settings panel
+  await openEditorSetting(page);
+  await openExperimentalFeaturesPanel(page);
+  await confirmExperimentalPrompt(page);
+
+  const settingModal = page.locator('[data-testid=setting-modal-content]');
+  const item = settingModal.locator('div').getByText('PDF embed preview');
+  await item.waitFor({ state: 'attached' });
+  await expect(item).toBeVisible();
+  const button = item.locator('label');
+  const isChecked = await button.locator('input').isChecked();
+  if (!isChecked) {
+    await button.click();
+  }
+
+  // Closes settings panel
+  await page.keyboard.press('Escape');
+}
+
 async function insertAttachment(page: Page, filepath: string) {
   await page.evaluate(() => {
     // Force fallback to input[type=file] in tests
@@ -131,23 +151,7 @@ test('should preview PDF in embed view', async ({ page }) => {
   await title.click();
   await page.keyboard.type('PDF preview');
 
-  // Opens settings panel
-  await openEditorSetting(page);
-  await openExperimentalFeaturesPanel(page);
-  await confirmExperimentalPrompt(page);
-
-  const settingModal = page.locator('[data-testid=setting-modal-content]');
-  const item = settingModal.locator('div').getByText('PDF embed preview');
-  await item.waitFor({ state: 'attached' });
-  await expect(item).toBeVisible();
-  const button = item.locator('label');
-  const isChecked = await button.locator('input').isChecked();
-  if (!isChecked) {
-    await button.click();
-  }
-
-  // Closes settings panel
-  await page.keyboard.press('Escape');
+  await enablePDFEmbedView(page);
 
   await clickNewPageButton(page);
   await waitForEmptyEditor(page);
@@ -256,4 +260,62 @@ test('should preview PDF in embed view', async ({ page }) => {
   // PDF embed view should not be re-rendered
   expect(await pageCursor.textContent()).toBe('2');
   expect(await pageCount.textContent()).toBe('3');
+});
+
+test('should sync name in pdf embed view', async ({ page }) => {
+  await openHomePage(page);
+  await waitForEditorLoad(page);
+  await enablePDFEmbedView(page);
+  await clickNewPageButton(page);
+  const title = getBlockSuiteEditorTitle(page);
+  await title.click();
+  await page.keyboard.press('Enter');
+
+  await insertAttachment(
+    page,
+    path.join(__dirname, '../../fixtures/lorem-ipsum.pdf')
+  );
+
+  const attachment = page.locator('affine-attachment');
+  await attachment.hover();
+
+  const attachmentToolbar = page.locator('.affine-attachment-toolbar');
+  await expect(attachmentToolbar).toBeVisible();
+
+  const attachmentTitle = attachment.locator(
+    '.affine-attachment-content-title-text'
+  );
+  await expect(attachmentTitle).toHaveText('lorem-ipsum.pdf');
+
+  // Renames
+  await attachmentToolbar.getByRole('button', { name: 'Rename' }).click();
+  const input = page
+    .locator('.affine-attachment-rename-input-wrapper')
+    .locator('input');
+  await input.fill('What is Lorem Ipsum');
+  await page.keyboard.press('Enter');
+  await expect(attachmentTitle).toHaveText('What is Lorem Ipsum.pdf');
+
+  await attachment.hover();
+
+  // Switches to embed view
+  await attachmentToolbar.getByRole('button', { name: 'Switch view' }).click();
+  await attachmentToolbar.getByRole('button', { name: 'Embed view' }).click();
+
+  await page.waitForTimeout(500);
+
+  const portal = attachment.locator('lit-react-portal');
+  const portalName = portal.locator('.pdf-name');
+  await expect(portal).toBeVisible();
+
+  await page.waitForTimeout(500);
+  await expect(portalName).toHaveText('What is Lorem Ipsum.pdf');
+
+  await attachment.hover();
+
+  // Renames
+  await attachmentToolbar.getByRole('button', { name: 'Rename' }).click();
+  await input.fill('lorem-ipsum');
+  await page.keyboard.press('Enter');
+  await expect(portalName).toHaveText('lorem-ipsum.pdf');
 });

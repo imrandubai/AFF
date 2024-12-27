@@ -67,6 +67,7 @@ export function PDFViewerEmbeddedInner({ model }: PDFViewerProps) {
     useMemo(() => (pageEntity ? pageEntity.page.bitmap$ : null), [pageEntity])
   );
 
+  const [name, setName] = useState(model.name);
   const [cursor, setCursor] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [visibility, setVisibility] = useState(false);
@@ -106,6 +107,8 @@ export function PDFViewerEmbeddedInner({ model }: PDFViewerProps) {
       },
     };
   }, [cursor, meta, peek]);
+
+  useEffect(() => model.name$.subscribe(val => setName(val)), [model]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -244,7 +247,9 @@ export function PDFViewerEmbeddedInner({ model }: PDFViewerProps) {
           className={clsx([embeddedStyles.pdfFooterItem, { truncate: true }])}
         >
           <AttachmentIcon />
-          <span className={embeddedStyles.pdfTitle}>{model.name}</span>
+          <span className={clsx([embeddedStyles.pdfTitle, 'pdf-name'])}>
+            {name}
+          </span>
         </div>
         <div
           className={clsx([
