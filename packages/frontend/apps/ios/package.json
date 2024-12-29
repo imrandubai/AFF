@@ -28,7 +28,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^6.28.0",
-    "yjs": "13.6.18"
+    "yjs": "13.6.21"
   },
   "devDependencies": {
     "@affine/native": "workspace:*",
